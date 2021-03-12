@@ -7,3 +7,17 @@ val rainaus_test = dataSplits(1)
 rainaus_train.count()
 rainaus_test.count()
 
+
+weatherDF.select("Temp9am").describe()
+
+val quantiles = rainaus_train.stat.approxQuantile("Temp9am",Array(0.25,0.75),0.0)
+val Q1 = quantiles(0)
+val Q3 = quantiles(1)
+val IQR = Q3 - Q1
+
+val lowerRange = Q1 - 1.5*IQR
+val upperRange = Q3+ 1.5*IQR
+
+val outliers = rainaus_train.filter(s"Temp9am < $lowerRange or Temp9am > $upperRange") 
+
+outliers.show()
