@@ -6,7 +6,7 @@ val rainaus_test = dataSplits(1)
 
 rainaus_train.count()
 rainaus_test.count()
-
+ import org.apache.spark.sql.{functions => F}
 
 weatherDF.select("Temp9am").describe().show()
 
@@ -19,10 +19,11 @@ val lowerRange = Q1 - 1.5*IQR
 val upperRange = Q3+ 1.5*IQR
 
 //val outliers = rainaus_train.filter(s"Temp9am < $lowerRange or Temp9am > $upperRange") 
-weatherDF.withColumn("Temp9am_new", when(weatherDF("Temp9am") > upperRange, upperRange).when(weatherDF("Temp9am") < lowerRange, lowerRange).when(weatherDF("Temp9am").isNull, lowerRange).otherwise(col("Temp9am"))).show()
-/*weatherDF.dtypes.foreach {  f =>
+var weatherDF2 = weatherDF
+weatherDF2.dtypes.foreach {  f =>
   val fName = f._1
   val fType = f._2
+  var n = 0
   if (fType  == "IntegerType" || fType  == "DoubleType") { 
     //println(s"STRING_TYPE")
     println(fName) 
@@ -35,7 +36,10 @@ weatherDF.withColumn("Temp9am_new", when(weatherDF("Temp9am") > upperRange, uppe
     val upperRange = Q3+ 1.5*IQR
     println(lowerRange)
     println(upperRange)
-    weatherDF.withColumn("newcol" + fName, when(col(fName) > upperRange, upperRange).when(col(fName) < lowerRange, lowerRange).otherwise(weatherDF["newcol"+fName]))
+    var n = weatherDF2.withColumn(fName + "_new", when(weatherDF2(fName) > upperRange, upperRange).when(weatherDF2(fName) < lowerRange, lowerRange).when(weatherDF2(fName).isNull, lowerRange).otherwise(col(fName)))
+    weatherDF2.show()
+    n++
+    //weatherDF.withColumn("newcol" + fName, when(col(fName) > upperRange, upperRange).when(col(fName) < lowerRange, lowerRange).otherwise(weatherDF["newcol"+fName]))
   }
   if (fType  == "DoubleType") { 
     //println(s"STRING_TYPE")
@@ -51,5 +55,5 @@ weatherDF.withColumn("Temp9am_new", when(weatherDF("Temp9am") > upperRange, uppe
     println(upperRange)
   }
   //println("Name %s Type:%s - all:%s".format(fName , fType, f))
-}*/
+}
 
