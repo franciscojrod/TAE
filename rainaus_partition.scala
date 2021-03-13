@@ -23,7 +23,7 @@ val upperRange = Q3+ 1.5*IQR
 weatherDF.dtypes.foreach {  f =>
   val fName = f._1
   val fType = f._2
-  if (fType  == "IntegerType") { 
+  if (fType  == "IntegerType" || fType  == "DoubleType") { 
     //println(s"STRING_TYPE")
     println(fName) 
     val quantiles = rainaus_train.stat.approxQuantile(fName,Array(0.25,0.75),0.0)
