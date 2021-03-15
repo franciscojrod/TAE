@@ -40,7 +40,7 @@ val columns2 = Seq("WindGustDir", "WindDir9am", "WindDir3pm", "RainToday")
 val weatherDF3_train = columns2.foldLeft(weatherDF2_train) { 
   (tempDF, colName) => {
    
-    val moda_array = weatherDF2_train.groupBy(colName).count().orderBy($"count".desc).withColumnRenamed(colName, "value").filter("value != 'null'").take(1)
+    val moda_array = weatherDF2_train.groupBy(colName).count().orderBy($"count".desc).withColumnRenamed(colName, "value").filter("value != 'null'").filter("value != 'NA'").take(1)
     val moda = moda_array(0)(0)
     
     println(colName + " - moda : " + moda)
