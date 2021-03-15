@@ -1,5 +1,7 @@
 import org.apache.spark.sql.types.{IntegerType, DoubleType, StringType, StructField, StructType}
-import org.apache.spark.sql.{DataFrame, SparkSession}
+import org.apache.spark.sql.{Column, DataFrame, SparkSession}
+import org.apache.spark.sql.DataFrameNaFunctions
+import org.apache.spark.sql.functions._
 
 println("\n\n******************* CARGA DE DATOS *******************\n\n")
 
@@ -12,7 +14,7 @@ val weatherSchema = StructType(Array(
   StructField("Location", StringType, true),
   StructField("MinTemp", DoubleType, true),
   StructField("MaxTemp", DoubleType, true),
-  StructField("RainFall", DoubleType, true),
+  StructField("Rainfall", DoubleType, true),
   StructField("Evaporation", DoubleType, true),
   StructField("Sunshine", DoubleType, true),
   StructField("WindGustDir", StringType, true),
@@ -36,9 +38,23 @@ val weatherDF = spark.read.format("csv").
   option("delimiter", ",").
   option("header", true).
   schema(weatherSchema).load(PATH + FILE_WEATHER)
+  .na.replace("MinTemp" :: "MaxTemp" :: "Rainfall" 
+   :: "Evaporation" :: "Sunshine" :: "WindGustDir" :: "WindGustSpeed" :: "WindDir9am" :: "WindDir3pm" 
+   :: "WindSpeed9am":: "WindSpeed3pm" :: "Humidity9am" :: "Humidity3pm" :: "Pressure9am" :: "Pressure3pm" ::  "Cloud9am"
+   :: "Cloud3pm" :: "Temp9am" :: "Temp3pm" :: "RainToday" :: "RainTomorrow" :: Nil, Map("NA" -> null))
 
 val primero = weatherDF.first()
 println("Primer registro: " + primero)
 
 val num_records = weatherDF.count()
 println("Numero de registros: " + num_records)
+
+
+println("\n\n******************* Partición aleatoria *******************")
+
+val dataSplits = weatherDF.randomSplit(Array(0.7, 0.3), seed=0)
+val weatherDF_train = dataSplits(0)
+val weatherDF_test = dataSplits(1)
+
+println("Numero de registros train: " + weatherDF_train.count())
+println("Numero de registros test: " + weatherDF_test.count())
