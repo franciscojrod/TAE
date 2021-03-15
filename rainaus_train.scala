@@ -2,7 +2,7 @@
 
 val columns = Seq("MinTemp", "MaxTemp", "Rainfall", "Evaporation", "Sunshine",
                    "WindGustSpeed", "WindSpeed9am", "WindSpeed3pm", "Pressure9am", 
-                   "Pressure3pm, "Humidity9am", "Humidity3pm", "Temp9am", "Temp3pm")
+                   "Pressure3pm", "Humidity9am", "Humidity3pm", "Temp9am", "Temp3pm")
 
 val weatherDF2_train = columns.foldLeft(weatherDF_train) { 
   (tempDF, colName) => {
