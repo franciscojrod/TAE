@@ -1,6 +1,5 @@
 import org.apache.spark.sql.types.{IntegerType, DoubleType, StringType, StructField, StructType}
 import org.apache.spark.sql.{DataFrame, SparkSession}
-from pyspark.sql.functions import min, max
 
 println("\n\n******************* CARGA DE DATOS *******************\n\n")
 
@@ -14,16 +13,16 @@ val weatherSchema = StructType(Array(
   StructField("MinTemp", DoubleType, true),
   StructField("MaxTemp", DoubleType, true),
   StructField("RainFall", DoubleType, true),
-  StructField("Evaporation", StringType, true),
-  StructField("Sunshine", StringType, true),
+  StructField("Evaporation", DoubleType, true),
+  StructField("Sunshine", DoubleType, true),
   StructField("WindGustDir", StringType, true),
-  StructField("WindGustSpeed", StringType, true),
+  StructField("WindGustSpeed", DoubleType, true),
   StructField("WindDir9am", StringType, true),
   StructField("WindDir3pm", StringType, true),
   StructField("WindSpeed9am", IntegerType, true),
   StructField("WindSpeed3pm", IntegerType, true),
   StructField("Humidity9am", IntegerType, true),
-  StructField("Humidity3pm", StringType, true),
+  StructField("Humidity3pm", IntegerType, true),
   StructField("Pressure9am", DoubleType, true),
   StructField("Pressure3pm", DoubleType, true),
   StructField("Cloud9am", IntegerType, true),
