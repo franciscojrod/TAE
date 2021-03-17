@@ -1,18 +1,36 @@
-// ---------
-
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.ml.feature.StringIndexer
 import org.apache.spark.ml.feature.StringIndexerModel
 
+// Obtenemos el nombrede las columnasde carDF, salvo la clase
+
+val attributeColumns= Seq("Date", "Location", "WindGustDir", "WindDir9am", "WindDir3pm", "RainToday", "RainTomorrow").toArray
+
+// Generamos los nombres de las nuevas columnas
+val outputColumns = attributeColumns.map(_ + "-num").toArray
+
+val siColumns= new StringIndexer().setInputCols(attributeColumns).setOutputCols(outputColumns).setStringOrderType("alphabetDesc")
+
+// Creamos el StringIndexerModel
+val simColumns= siColumns.fit(weatherDF4_train)
+
+val weatherDFnumeric= simColumns.transform(weatherDF4_train).drop(attributeColumns:_*)
+
+// VectorAssembler
+
+import org.apache.spark.ml.feature.OneHotEncoder
+import org.apache.spark.ml.feature.OneHotEncoderModel
+
 val attributeColumns_hot= Seq("Date", "Location", "WindGustDir", "WindDir9am", "WindDir3pm", "RainToday", "RainTomorrow").toArray
+val inputCol = outputColumns
 // Generamos los nombres de las nuevas columnas
 val outputColumns_hot = attributeColumns_hot.map(_ + "-hot").toArray
 
-val hotColumns = new StringIndexer().setInputCols(attributeColumns_hot).setOutputCols(outputColumns_hot).setStringOrderType("alphabetDesc")
+val hotColumns = new OneHotEncoder().setInputCols(inputCol).setOutputCols(outputColumns_hot)
 
-val hotmColumns= hotColumns.fit(weatherDF4_train)
+val hotmColumns= hotColumns.fit(weatherDFnumeric)
 
-val WeatherDFhot = hotmColumns.transform(weatherDF4_train).drop(attributeColumns_hot:_*)
+val WeatherDFhot = hotmColumns.transform(weatherDFnumeric).drop(inputCol:_*)
 
 WeatherDFhot.show(5)
 
