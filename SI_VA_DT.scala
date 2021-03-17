@@ -40,7 +40,7 @@ val dataSplits= weatherFeaturesLabelDF.randomSplit(Array(0.66, 0.34), seed=0)
 val trainWeatherDF= dataSplits(0)
 val testWeatherDF= dataSplits(1)
 
-Instancia de decision tree
+// Instancia de decision tree
 /* Importamos de ML*/
 import org.apache.spark.ml.classification.DecisionTreeClassifier
 /* Creamos una instancia de DecisionTreeClassifier*/
@@ -58,7 +58,7 @@ DTweatherModel.toDebugString
 /* Predecimos la clase de los ejemplos de prueba*/
 val predictionsAndLabelsDF= DTweatherModel.transform(testWeatherDF).select("prediction", "label")
 
-Evaluación
+// Evaluación
 
 /* Importamos de ML*/ import org.apache.spark.ml.evaluation.MulticlassClassificationEvaluator
 /* Creamos una instancia de clasificación multiclass*/
