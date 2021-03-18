@@ -34,6 +34,21 @@ val hotmColumns= hotColumns.fit(weatherDFnumeric)
 val WeatherDFhot = hotmColumns.transform(weatherDFnumeric).drop(inputCol:_*)
 
 
+/* Da NUll
+
+import org.apache.spark.ml.classification.DecisionTreeClassifier
+
+val DTweather = new DecisionTreeClassifier()
+
+val DTweatherAus = DTweather.fit(WeatherFeaturesClaseDFLabel)
+
+val predictionsAndLabelsDF = DTweatherAus.transform(WeatherFeaturesClaseDFLabel).select("prediction", "label")
+
+predictionsAndLabelsDF.show(3)
+
+*/
+
+
 import org.apache.spark.ml.feature.VectorAssembler
 
 val va = new VectorAssembler().setOutputCol("features").setInputCols(outputColumns_hot)
