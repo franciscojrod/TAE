@@ -34,7 +34,7 @@ val weatherSchema = StructType(Array(
   StructField("RainToday", StringType, true),
   StructField("RainTomorrow", StringType, true)));
 
-val weatherDF = spark.read.format("csv").
+val weatherRawDF = spark.read.format("csv").
   option("delimiter", ",").
   option("header", true).
   schema(weatherSchema).load(PATH + FILE_WEATHER)
@@ -43,11 +43,26 @@ val weatherDF = spark.read.format("csv").
    :: "WindSpeed9am":: "WindSpeed3pm" :: "Humidity9am" :: "Humidity3pm" :: "Pressure9am" :: "Pressure3pm" ::  "Cloud9am"
    :: "Cloud3pm" :: "Temp9am" :: "Temp3pm" :: "RainToday" :: "RainTomorrow" :: Nil, Map("NA" -> null))
 
-val primero = weatherDF.first()
-println("Primer registro: " + primero)
+val num_recordsRaw = weatherRawDF.count()
+println("Numero de registros RAW: " + num_recordsRaw)
+
+val weatherDF = weatherRawDF.na.replace("MinTemp" :: "MaxTemp" :: "Rainfall"
+   :: "Evaporation" :: "Sunshine" :: "WindGustDir" :: "WindGustSpeed" :: "WindDir9am" :: "WindDir3pm"
+   :: "WindSpeed9am":: "WindSpeed3pm" :: "Humidity9am" :: "Humidity3pm" :: "Pressure9am" :: "Pressure3pm" ::  "Cloud9am"
+   :: "Cloud3pm" :: "Temp9am" :: "Temp3pm" :: "RainToday" :: "RainTomorrow" :: Nil, Map("NA" -> null))
+.na.drop("all")
+
 
 val num_records = weatherDF.count()
 println("Numero de registros: " + num_records)
+
+
+println("Se han eliminado " + (num_recordsRaw - num_records) + " líneas vacías.")
+
+
+val primero = weatherDF.first()
+println("Primer registro: " + primero)
+
 
 
 println("\n\n******************* Partición aleatoria *******************")
