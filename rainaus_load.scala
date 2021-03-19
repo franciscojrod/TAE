@@ -62,3 +62,13 @@ println("Se han eliminado " + (num_recordsRaw - num_records) + " líneas vacías
 
 val primero = weatherDF.first()
 println("Primer registro: " + primero)
+
+
+println("\n\n******************* Partición aleatoria *******************")
+
+val dataSplits = weatherDF.randomSplit(Array(0.7, 0.3), seed=0)
+val weatherDF_train = dataSplits(0)
+val weatherDF_test = dataSplits(1)
+
+println("Numero de registros train: " + weatherDF_train.count())
+println("Numero de registros test: " + weatherDF_test.count())
