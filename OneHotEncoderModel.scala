@@ -12,6 +12,7 @@ val outputColumns = attributeColumns.map(_ + "-num").toArray
 val siColumns= new StringIndexer().setInputCols(attributeColumns).setOutputCols(outputColumns).setStringOrderType("alphabetDesc")
 
 // Creamos el StringIndexerModel
+
 val simColumns= siColumns.setHandleInvalid("skip").fit(weatherDF6_train)
 
 val weatherDFnumeric= simColumns.transform(weatherDF6_train).drop(attributeColumns:_*)
