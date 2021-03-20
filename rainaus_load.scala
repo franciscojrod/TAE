@@ -2,6 +2,11 @@ import org.apache.spark.sql.types.{IntegerType, DoubleType, StringType, StructFi
 import org.apache.spark.sql.{Column, DataFrame, SparkSession}
 import org.apache.spark.sql.DataFrameNaFunctions
 import org.apache.spark.sql.functions._
+import org.apache.spark.ml.linalg.{Vector, Vectors}
+import org.apache.spark.ml.stat.ChiSquareTest
+import org.apache.spark.ml.feature.StringIndexer
+import org.apache.spark.ml.feature.StringIndexerModel
+import org.apache.spark.ml.feature.VectorAssembler
 
 println("\n\n******************* CARGA DE DATOS *******************\n\n")
 
@@ -65,6 +70,24 @@ println("Primer registro: " + primero)
 
 val weatherDFnoNull = weatherDF.na.drop("all", Seq("RainTomorrow"))
 
+// Chi square
+val categoricalColumns= Seq("Date", "Location", "WindGustDir", "WindDir9am", "WindDir3pm", "RainToday").toArray
+
+val outputColumns = categoricalColumns.map(_ + "-cat").toArray
+
+val siColumns= new StringIndexer().setInputCols(categoricalColumns).setOutputCols(outputColumns).setStringOrderType("alphabetDesc")
+
+val weatherDFnoNullChiSq = siColumns.setHandleInvalid("skip").fit(weatherDFnoNull).transform(weatherDFnoNull).drop(categoricalColumns:_*)
+
+val va = new VectorAssembler().setOutputCol("features").setInputCols(outputColumns)
+
+val weatherDFnoNullChiSq2 = va.transform(weatherDFnoNullChiSq).select("features", "RainTomorrow")
+
+val indiceClase= new StringIndexer().setInputCol("RainTomorrow").setOutputCol("label").setStringOrderType("alphabetDesc")
+
+val weatherDFnoNullChiSq3 = indiceClase.fit(weatherDFnoNullChiSq2).transform(weatherDFnoNullChiSq2).drop("RainTomorrow")
+
+ChiSquareTest.test(weatherDFnoNullChiSq3, "features", "label").head
 
 println("\n\n******************* Partición aleatoria *******************")
 
