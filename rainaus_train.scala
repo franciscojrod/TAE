@@ -9,7 +9,7 @@ val weatherDF2_train = weatherDF_train.withColumn("UniqueID", concat(col("Date")
 val weatherDF3_train = weatherDF2_train.withColumn("Month",split(col("Date"),"-").getItem(1).cast("int")).drop("Date")
 
 
-val weatherDF4_train = columns.foldLeft(weatherDF_train) { 
+val weatherDF4_train = columns.foldLeft(weatherDF3_train) { 
   (tempDF, colName) => {
    
     val quantiles = weatherDF_train.stat.approxQuantile(colName,Array(0.25, 0.5, 0.75),0.0)
