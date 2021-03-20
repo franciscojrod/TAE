@@ -4,7 +4,12 @@ val columns = Seq("MinTemp", "MaxTemp", "Rainfall", "Evaporation", "Sunshine",
                    "WindGustSpeed", "WindSpeed9am", "WindSpeed3pm", "Pressure9am", 
                    "Pressure3pm", "Humidity9am", "Humidity3pm", "Temp9am", "Temp3pm")
 
-val weatherDF2_train = columns.foldLeft(weatherDF_train) { 
+val weatherDF2_train = weatherDF_train.withColumn("UniqueID", concat(col("Date"), lit("-"), col("Location"))).dropDuplicates("UniqueID").drop("UniqueID")
+
+val weatherDF3_train = weatherDF2_train.withColumn("Month",split(col("Date"),"-").getItem(1).cast("int")).drop("Date")
+
+
+val weatherDF4_train = columns.foldLeft(weatherDF3_train) { 
   (tempDF, colName) => {
    
     val quantiles = weatherDF_train.stat.approxQuantile(colName,Array(0.25, 0.5, 0.75),0.0)
@@ -37,7 +42,7 @@ weatherDF2_train.limit(5).show()
 
 val columns2 = Seq("WindGustDir", "WindDir9am", "WindDir3pm", "RainToday")
 
-val weatherDF3_train = columns2.foldLeft(weatherDF2_train) { 
+val weatherDF5_train = columns2.foldLeft(weatherDF4_train) { 
   (tempDF, colName) => {
    
     val moda_array = weatherDF2_train.groupBy(colName).count().orderBy($"count".desc).withColumnRenamed(colName, "value").filter("value != 'null'").filter("value != 'NA'").take(1)
@@ -61,7 +66,7 @@ weatherDF3_train.limit(5).show()
 
 val columns3 = Seq("Cloud9am", "Cloud3pm")
 
-val weatherDF4_train = columns3.foldLeft(weatherDF3_train) { 
+val weatherDF6_train = columns3.foldLeft(weatherDF5_train) { 
   (tempDF, colName) => {
    
     val moda_array = weatherDF3_train.groupBy(colName).count().orderBy($"count".desc).withColumnRenamed(colName, "value").filter("value is not null").take(1)
@@ -78,4 +83,4 @@ val weatherDF4_train = columns3.foldLeft(weatherDF3_train) {
   }  
 }
 
-weatherDF4_train.limit(5).show()
+weatherDF6_train.limit(5).show()

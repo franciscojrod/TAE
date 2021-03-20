@@ -4,7 +4,7 @@ import org.apache.spark.ml.feature.StringIndexerModel
 
 // Obtenemos el nombrede las columnasde weatherDF, salvo la clase
 
-val attributeColumns= Seq("Date", "Location", "WindGustDir", "WindDir9am", "WindDir3pm", "RainToday").toArray
+val attributeColumns= Seq("Location", "WindGustDir", "WindDir9am", "WindDir3pm", "RainToday").toArray
 
 // Generamos los nombres de las nuevas columnas
 val outputColumns = attributeColumns.map(_ + "-num").toArray
@@ -12,16 +12,17 @@ val outputColumns = attributeColumns.map(_ + "-num").toArray
 val siColumns= new StringIndexer().setInputCols(attributeColumns).setOutputCols(outputColumns).setStringOrderType("alphabetDesc")
 
 // Creamos el StringIndexerModel
-val simColumns= siColumns.setHandleInvalid("skip").fit(weatherDF4_train)
 
-val weatherDFnumeric= simColumns.transform(weatherDF4_train).drop(attributeColumns:_*)
+val simColumns= siColumns.setHandleInvalid("skip").fit(weatherDF6_train)
+
+val weatherDFnumeric= simColumns.transform(weatherDF6_train).drop(attributeColumns:_*)
 
 // VectorAssembler
 
 import org.apache.spark.ml.feature.OneHotEncoder
 import org.apache.spark.ml.feature.OneHotEncoderModel
 
-val attributeColumns_hot= Seq("Date", "Location", "WindGustDir", "WindDir9am", "WindDir3pm", "RainToday").toArray
+val attributeColumns_hot= Seq("Location", "WindGustDir", "WindDir9am", "WindDir3pm", "RainToday").toArray
 val inputCol = outputColumns
 // Generamos los nombres de las nuevas columnas
 val outputColumns_hot = attributeColumns_hot.map(_ + "-hot").toArray
