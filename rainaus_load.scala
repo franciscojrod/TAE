@@ -71,23 +71,23 @@ println("Primer registro: " + primero)
 val weatherDFnoNull = weatherDF.na.drop("all", Seq("RainTomorrow"))
 
 // Chi square
-val categoricalColumns= Seq("Date", "Location", "WindGustDir", "WindDir9am", "WindDir3pm", "RainToday").toArray
+//val categoricalColumns= Seq("Date", "Location", "WindGustDir", "WindDir9am", "WindDir3pm", "RainToday").toArray
 
-val outputColumns = categoricalColumns.map(_ + "-cat").toArray
+//val outputColumns = categoricalColumns.map(_ + "-cat").toArray
 
-val siColumns= new StringIndexer().setInputCols(categoricalColumns).setOutputCols(outputColumns).setStringOrderType("alphabetDesc")
+//val siColumns= new StringIndexer().setInputCols(categoricalColumns).setOutputCols(outputColumns).setStringOrderType("alphabetDesc")
 
-val weatherDFnoNullChiSq = siColumns.setHandleInvalid("skip").fit(weatherDFnoNull).transform(weatherDFnoNull).drop(categoricalColumns:_*)
+//val weatherDFnoNullChiSq = siColumns.setHandleInvalid("skip").fit(weatherDFnoNull).transform(weatherDFnoNull).drop(categoricalColumns:_*)
 
-val va = new VectorAssembler().setOutputCol("features").setInputCols(outputColumns)
+//val va = new VectorAssembler().setOutputCol("features").setInputCols(outputColumns)
 
-val weatherDFnoNullChiSq2 = va.transform(weatherDFnoNullChiSq).select("features", "RainTomorrow")
+//val weatherDFnoNullChiSq2 = va.transform(weatherDFnoNullChiSq).select("features", "RainTomorrow")
 
-val indiceClase= new StringIndexer().setInputCol("RainTomorrow").setOutputCol("label").setStringOrderType("alphabetDesc")
+//val indiceClase= new StringIndexer().setInputCol("RainTomorrow").setOutputCol("label").setStringOrderType("alphabetDesc")
 
-val weatherDFnoNullChiSq3 = indiceClase.fit(weatherDFnoNullChiSq2).transform(weatherDFnoNullChiSq2).drop("RainTomorrow")
+//val weatherDFnoNullChiSq3 = indiceClase.fit(weatherDFnoNullChiSq2).transform(weatherDFnoNullChiSq2).drop("RainTomorrow")
 
-ChiSquareTest.test(weatherDFnoNullChiSq3, "features", "label").head
+//ChiSquareTest.test(weatherDFnoNullChiSq3, "features", "label").head
 
 println("\n\n******************* Partición aleatoria *******************")
 
