@@ -143,4 +143,11 @@ val metrics_ML4 = new MulticlassClassificationEvaluator()
 metrics_ML4.setMetricName("accuracy")
 val acierto_ML4 = metrics.evaluate(predictionsAndLabelsDF_ML4)
 val error_ML4 = 1 - acierto_ML4
+
+
+// Sin librería ML
+//val errores = predictionsAndLabelsDF_ML4.map(x=>if(x(0)==x(1))0 else 1).collect.sum
+//val error_ML4 = errores.toDouble/predictionsAndLabelsDF_ML4.count
+//val acierto_ML4 = 1-error_ML4
+
 println(f"Tasa de error ML4= $error_ML4%1.3f")
