@@ -12,10 +12,9 @@ val outputColumns = attributeColumns.map(_ + "-num").toArray
 val siColumns= new StringIndexer().setInputCols(attributeColumns).setOutputCols(outputColumns).setStringOrderType("alphabetDesc")
 
 // Creamos el StringIndexerModel
-val simColumns= siColumns.fit(weatherDF4_train)
+val simColumns= siColumns.setHandleInvalid("skip").fit(weatherDF4_train)
 
 val weatherDFnumeric= simColumns.transform(weatherDF4_train).drop(attributeColumns:_*)
-
 
 // VectorAssembler
 
@@ -34,7 +33,21 @@ val hotmColumns= hotColumns.fit(weatherDFnumeric)
 val WeatherDFhot = hotmColumns.transform(weatherDFnumeric).drop(inputCol:_*)
 
 
-/* Da NUll
+import org.apache.spark.ml.feature.VectorAssembler
+
+val va = new VectorAssembler().setOutputCol("features").setInputCols(outputColumns_hot)
+
+val WeatherFeaturesClaseDF = va.transform(WeatherDFhot).select("features", "RainTomorrow")
+
+WeatherFeaturesClaseDF.show(2)
+
+
+val indiceClase= new StringIndexer().setInputCol("RainTomorrow").setOutputCol("label").setStringOrderType("alphabetDesc")
+val WeatherFeaturesClaseDFLabel = indiceClase.fit(WeatherFeaturesClaseDF).transform(WeatherFeaturesClaseDF).drop("RainTomorrow")
+
+WeatherFeaturesClaseDFLabel.show(5)
+
+//valores por defecto
 
 import org.apache.spark.ml.classification.DecisionTreeClassifier
 
@@ -46,21 +59,94 @@ val predictionsAndLabelsDF = DTweatherAus.transform(WeatherFeaturesClaseDFLabel)
 
 predictionsAndLabelsDF.show(3)
 
-*/
+import org.apache.spark.ml.evaluation.MulticlassClassificationEvaluator
 
+val metrics = new MulticlassClassificationEvaluator()
+metrics.setMetricName("accuracy")
+val acierto = metrics.evaluate(predictionsAndLabelsDF)
+val error = 1 - acierto
+println(f"Tasa de error= $error%1.3f")
 
-import org.apache.spark.ml.feature.VectorAssembler
+//valores MaxBin, MaxProf y entropia
 
-val va = new VectorAssembler().setOutputCol("features").setInputCols(outputColumns_hot)
+val impureza = "entropy"
+val maxProf = 9
+val maxBins = 150
 
-val WeatherFeaturesClaseDF = va.transform(WeatherDFhot).select("features", "RainTomorrow")
+val DTweather = new DecisionTreeClassifier().setImpurity(impureza).setMaxDepth(maxProf).setMaxBins(maxBins)
 
-WeatherFeaturesClaseDF.show(5)
+val DTweatherAus = DTweather.fit(WeatherFeaturesClaseDFLabel)
 
+val predictionsAndLabelsDF = DTweatherAus.transform(WeatherFeaturesClaseDFLabel).select("prediction", "label")
 
-val indiceClase= new StringIndexer().setInputCol("RainTomorrow").setOutputCol("label").setStringOrderType("alphabetDesc")
-val WeatherFeaturesClaseDFLabel = indiceClase.fit(WeatherFeaturesClaseDF).transform(WeatherFeaturesClaseDF).drop("RainTomorrow")
+predictionsAndLabelsDF.show(3)
 
-WeatherFeaturesClaseDFLabel.show(5)
+import org.apache.spark.ml.evaluation.MulticlassClassificationEvaluator
 
+val metrics = new MulticlassClassificationEvaluator()
+metrics.setMetricName("accuracy")
+val acierto = metrics.evaluate(predictionsAndLabelsDF)
+val error = 1 - acierto
+println(f"Tasa de error= $error%1.3f")
 
+val impureza = "entropy"
+val maxProf = 9
+val maxBins = 2
+
+val DTweather = new DecisionTreeClassifier().setImpurity(impureza).setMaxDepth(maxProf).setMaxBins(maxBins)
+
+val DTweatherAus = DTweather.fit(WeatherFeaturesClaseDFLabel)
+
+val predictionsAndLabelsDF = DTweatherAus.transform(WeatherFeaturesClaseDFLabel).select("prediction", "label")
+
+predictionsAndLabelsDF.show(3)
+
+import org.apache.spark.ml.evaluation.MulticlassClassificationEvaluator
+
+val metrics = new MulticlassClassificationEvaluator()
+metrics.setMetricName("accuracy")
+val acierto = metrics.evaluate(predictionsAndLabelsDF)
+val error = 1 - acierto
+println(f"Tasa de error= $error%1.3f")
+
+// se comprueba que maxBins no modifica nada
+
+val impureza = "entropy"
+val maxProf = 3
+val maxBins = 2
+
+val DTweather = new DecisionTreeClassifier().setImpurity(impureza).setMaxDepth(maxProf).setMaxBins(maxBins)
+
+val DTweatherAus = DTweather.fit(WeatherFeaturesClaseDFLabel)
+
+val predictionsAndLabelsDF = DTweatherAus.transform(WeatherFeaturesClaseDFLabel).select("prediction", "label")
+
+predictionsAndLabelsDF.show(3)
+
+import org.apache.spark.ml.evaluation.MulticlassClassificationEvaluator
+
+val metrics = new MulticlassClassificationEvaluator()
+metrics.setMetricName("accuracy")
+val acierto = metrics.evaluate(predictionsAndLabelsDF)
+val error = 1 - acierto
+println(f"Tasa de error= $error%1.3f")
+
+val impureza = "entropy"
+val maxProf = 15
+val maxBins = 2
+
+val DTweather = new DecisionTreeClassifier().setImpurity(impureza).setMaxDepth(maxProf).setMaxBins(maxBins)
+
+val DTweatherAus = DTweather.fit(WeatherFeaturesClaseDFLabel)
+
+val predictionsAndLabelsDF = DTweatherAus.transform(WeatherFeaturesClaseDFLabel).select("prediction", "label")
+
+predictionsAndLabelsDF.show(3)
+
+import org.apache.spark.ml.evaluation.MulticlassClassificationEvaluator
+
+val metrics = new MulticlassClassificationEvaluator()
+metrics.setMetricName("accuracy")
+val acierto = metrics.evaluate(predictionsAndLabelsDF)
+val error = 1 - acierto
+println(f"Tasa de error= $error%1.3f")
