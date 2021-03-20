@@ -2,7 +2,7 @@ import org.apache.spark.sql.DataFrame
 import org.apache.spark.ml.feature.StringIndexer
 import org.apache.spark.ml.feature.StringIndexerModel
 
-// Obtenemos el nombrede las columnasde carDF, salvo la clase
+// Obtenemos el nombrede las columnasde weatherDF, salvo la clase
 
 val attributeColumns= Seq("Date", "Location", "WindGustDir", "WindDir9am", "WindDir3pm", "RainToday").toArray
 
