@@ -63,11 +63,12 @@ println("Se han eliminado " + (num_recordsRaw - num_records) + " líneas vacías
 val primero = weatherDF.first()
 println("Primer registro: " + primero)
 
+val weatherDFnoNull = weatherDF.na.drop("all", Seq("RainTomorrow"))
 
 
 println("\n\n******************* Partición aleatoria *******************")
 
-val dataSplits = weatherDF.randomSplit(Array(0.7, 0.3), seed=0)
+val dataSplits = weatherDFnoNull.randomSplit(Array(0.7, 0.3), seed=0)
 val weatherDF_train = dataSplits(0)
 val weatherDF_test = dataSplits(1)
 
