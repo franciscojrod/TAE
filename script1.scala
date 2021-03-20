@@ -214,13 +214,23 @@ val WeatherFeaturesClaseDFLabel = indiceClase.fit(WeatherFeaturesClaseDF).transf
 
 WeatherFeaturesClaseDFLabel.show(5)
 
+//division en 4 partes
+
+val WeatherFeaturesClaseDFLabelDataSplits = WeatherFeaturesClaseDFLabel.randomSplit(Array(0.20, 0.20, 0.20, 0.20, 0.20), seed=0)
+val WeatherFeaturesClase1_train = WeatherFeaturesClaseDFLabelDataSplits(0)
+val WeatherFeaturesClase2_train = WeatherFeaturesClaseDFLabelDataSplits(1)
+val WeatherFeaturesClase3_train = WeatherFeaturesClaseDFLabelDataSplits(2)
+val WeatherFeaturesClase4_train = WeatherFeaturesClaseDFLabelDataSplits(3)
+val WeatherFeaturesClase5_train = WeatherFeaturesClaseDFLabelDataSplits(4)
+
+
 //valores por defecto
 
 val DTweather = new DecisionTreeClassifier()
 
-val DTweatherAus = DTweather.fit(WeatherFeaturesClaseDFLabel)
+val DTweatherAus = DTweather.fit(WeatherFeaturesClase1_train)
 
-val predictionsAndLabelsDF = DTweatherAus.transform(WeatherFeaturesClaseDFLabel).select("prediction", "label")
+val predictionsAndLabelsDF = DTweatherAus.transform(WeatherFeaturesClase1_train).select("prediction", "label")
 
 predictionsAndLabelsDF.show(3)
 
@@ -238,14 +248,14 @@ val maxBins = 150
 
 val DTweather_ML1 = new DecisionTreeClassifier().setImpurity(impureza).setMaxDepth(maxProf).setMaxBins(maxBins)
 
-val DTweatherAus_ML1 = DTweather_ML1.fit(WeatherFeaturesClaseDFLabel)
+val DTweatherAus_ML1 = DTweather_ML1.fit(WeatherFeaturesClase2_train)
 
-val predictionsAndLabelsDF_ML1 = DTweatherAus_ML1.transform(WeatherFeaturesClaseDFLabel).select("prediction", "label")
+val predictionsAndLabelsDF_ML1 = DTweatherAus_ML1.transform(WeatherFeaturesClase2_train).select("prediction", "label")
 
 predictionsAndLabelsDF_ML1.show(3)
 
-val errores = predictionsAndLabelsDF_ML1.map(x=>if(x(0)==x(1))0 else 1).collect.sum
-val error_ML1 = errores.toDouble/predictionsAndLabelsDF_ML1.count
+val errores_ML1 = predictionsAndLabelsDF_ML1.map(x=>if(x(0)==x(1))0 else 1).collect.sum
+val error_ML1 = errores_ML1.toDouble/predictionsAndLabelsDF_ML1.count
 val acierto_ML1 = 1-error_ML1
 println(f"Tasa de error ML1= $error_ML1%1.3f")
 
@@ -254,15 +264,15 @@ val maxBins2 = 2
 
 val DTweather_ML2 = new DecisionTreeClassifier().setImpurity(impureza).setMaxDepth(maxProf2).setMaxBins(maxBins2)
 
-val DTweatherAus_ML2 = DTweather_ML2.fit(WeatherFeaturesClaseDFLabel)
+val DTweatherAus_ML2 = DTweather_ML2.fit(WeatherFeaturesClase3_train)
 
-val predictionsAndLabelsDF_ML2 = DTweatherAus_ML2.transform(WeatherFeaturesClaseDFLabel).select("prediction", "label")
+val predictionsAndLabelsDF_ML2 = DTweatherAus_ML2.transform(WeatherFeaturesClase3_train).select("prediction", "label")
 
 predictionsAndLabelsDF_ML2.show(3)
 
 
-val errores = predictionsAndLabelsDF_ML2.map(x=>if(x(0)==x(1))0 else 1).collect.sum
-val error_ML2 = errores.toDouble/predictionsAndLabelsDF_ML2.count
+val errores_ML2 = predictionsAndLabelsDF_ML2.map(x=>if(x(0)==x(1))0 else 1).collect.sum
+val error_ML2 = errores_ML2.toDouble/predictionsAndLabelsDF_ML2.count
 val acierto_ML2 = 1-error_ML2
 println(f"Tasa de error ML2= $error_ML2%1.3f")
 
@@ -273,14 +283,14 @@ val maxBins_ML3 = 2
 
 val DTweather_ML3 = new DecisionTreeClassifier().setImpurity(impureza).setMaxDepth(maxProf_ML3).setMaxBins(maxBins_ML3)
 
-val DTweatherAus_ML3 = DTweather_ML3.fit(WeatherFeaturesClaseDFLabel)
+val DTweatherAus_ML3 = DTweather_ML3.fit(WeatherFeaturesClase4_train)
 
-val predictionsAndLabelsDF_ML3 = DTweatherAus_ML3.transform(WeatherFeaturesClaseDFLabel).select("prediction", "label")
+val predictionsAndLabelsDF_ML3 = DTweatherAus_ML3.transform(WeatherFeaturesClase4_train).select("prediction", "label")
 
 predictionsAndLabelsDF_ML3.show(3)
 
-val errores = predictionsAndLabelsDF_ML3.map(x=>if(x(0)==x(1))0 else 1).collect.sum
-val error_ML3 = errores.toDouble/predictionsAndLabelsDF_ML3.count
+val errores_ML3 = predictionsAndLabelsDF_ML3.map(x=>if(x(0)==x(1))0 else 1).collect.sum
+val error_ML3 = errores_ML3.toDouble/predictionsAndLabelsDF_ML3.count
 val acierto_ML3 = 1-error_ML3
 println(f"Tasa de error ML3= $error_ML3%1.3f")
 
@@ -289,14 +299,14 @@ val maxBins_ML4 = 2
 
 val DTweather_ML4 = new DecisionTreeClassifier().setImpurity(impureza).setMaxDepth(maxProf_ML4).setMaxBins(maxBins_ML4)
 
-val DTweatherAus_ML4 = DTweather_ML4.fit(WeatherFeaturesClaseDFLabel)
+val DTweatherAus_ML4 = DTweather_ML4.fit(WeatherFeaturesClase5_train)
 
-val predictionsAndLabelsDF_ML4 = DTweatherAus_ML4.transform(WeatherFeaturesClaseDFLabel).select("prediction", "label")
+val predictionsAndLabelsDF_ML4 = DTweatherAus_ML4.transform(WeatherFeaturesClase5_train).select("prediction", "label")
 
 predictionsAndLabelsDF_ML4.show(3)
 
-val errores = predictionsAndLabelsDF_ML4.map(x=>if(x(0)==x(1))0 else 1).collect.sum
-val error_ML4 = errores.toDouble/predictionsAndLabelsDF_ML4.count
+val errores_ML4 = predictionsAndLabelsDF_ML4.map(x=>if(x(0)==x(1))0 else 1).collect.sum
+val error_ML4 = errores_ML4.toDouble/predictionsAndLabelsDF_ML4.count
 val acierto_ML4 = 1-error_ML4
 
 println(f"Tasa de error ML4= $error_ML4%1.3f")
