@@ -468,7 +468,9 @@ val acierto_ML4 = 1-error_ML4
 
 println(f"Tasa de error ML4 = $error_ML4%1.3f")
 
-// Guardando modelo
+// Guardando modelo elegido
 
-DTweatherAus_ML4.write.overwrite().save(PATH  + "modelo/DTweatherAus_ML4")
+println("El modelo elegido es DTweatherAus_ML3")
+
+DTweatherAus_ML3.write.overwrite().save(PATH  + "modelo/DTweatherAus_modelo")
 
