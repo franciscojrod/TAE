@@ -379,13 +379,15 @@ WeatherFeaturesClaseDFLabel_test.show(5)
 
 // Fin Test
 
+// Modelo ML
+
 //valores por defecto
 
 val DTweather = new DecisionTreeClassifier()
 
 val DTweatherAus = DTweather.fit(WeatherFeaturesClaseDFLabel)
 
-val predictionsAndLabelsDF = DTweatherAus.transform(WeatherFeaturesClaseDFLabel).select("prediction", "label")
+val predictionsAndLabelsDF = DTweatherAus.transform(WeatherFeaturesClaseDFLabel_test).select("prediction", "label")
 
 predictionsAndLabelsDF.show(3)
 
@@ -405,7 +407,7 @@ val DTweather_ML1 = new DecisionTreeClassifier().setImpurity(impureza).setMaxDep
 
 val DTweatherAus_ML1 = DTweather_ML1.fit(WeatherFeaturesClaseDFLabel)
 
-val predictionsAndLabelsDF_ML1 = DTweatherAus_ML1.transform(WeatherFeaturesClaseDFLabel).select("prediction", "label")
+val predictionsAndLabelsDF_ML1 = DTweatherAus_ML1.transform(WeatherFeaturesClaseDFLabel_test).select("prediction", "label")
 
 predictionsAndLabelsDF_ML1.show(3)
 
@@ -421,7 +423,7 @@ val DTweather_ML2 = new DecisionTreeClassifier().setImpurity(impureza).setMaxDep
 
 val DTweatherAus_ML2 = DTweather_ML2.fit(WeatherFeaturesClaseDFLabel)
 
-val predictionsAndLabelsDF_ML2 = DTweatherAus_ML2.transform(WeatherFeaturesClaseDFLabel).select("prediction", "label")
+val predictionsAndLabelsDF_ML2 = DTweatherAus_ML2.transform(WeatherFeaturesClaseDFLabel_test).select("prediction", "label")
 
 predictionsAndLabelsDF_ML2.show(3)
 
@@ -440,7 +442,7 @@ val DTweather_ML3 = new DecisionTreeClassifier().setImpurity(impureza).setMaxDep
 
 val DTweatherAus_ML3 = DTweather_ML3.fit(WeatherFeaturesClaseDFLabel)
 
-val predictionsAndLabelsDF_ML3 = DTweatherAus_ML3.transform(WeatherFeaturesClaseDFLabel).select("prediction", "label")
+val predictionsAndLabelsDF_ML3 = DTweatherAus_ML3.transform(WeatherFeaturesClaseDFLabel_test).select("prediction", "label")
 
 predictionsAndLabelsDF_ML3.show(3)
 
@@ -456,12 +458,12 @@ val DTweather_ML4 = new DecisionTreeClassifier().setImpurity(impureza).setMaxDep
 
 val DTweatherAus_ML4 = DTweather_ML4.fit(WeatherFeaturesClaseDFLabel)
 
-val predictionsAndLabelsDF_ML4 = DTweatherAus_ML4.transform(WeatherFeaturesClaseDFLabel).select("prediction", "label")
+val predictionsAndLabelsDF_ML4 = DTweatherAus_ML4.transform(WeatherFeaturesClaseDFLabel_test).select("prediction", "label")
 
 predictionsAndLabelsDF_ML4.show(3)
 
 val errores_ML4 = predictionsAndLabelsDF_ML4.map(x=>if(x(0)==x(1))0 else 1).collect.sum
 val error_ML4 = errores_ML4.toDouble/predictionsAndLabelsDF_ML4.count
-val acierto_ML4 = 1-error_ML4
+val acierto_ML4 = 1-error_ML4 
 
 println(f"Tasa de error ML4 = $error_ML4%1.3f")
