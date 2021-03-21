@@ -416,7 +416,7 @@ val error_ML1 = errores_ML1.toDouble/predictionsAndLabelsDF_ML1.count
 val acierto_ML1 = 1-error_ML1
 println(f"Tasa de error ML1= $error_ML1%1.3f")
 
-val maxProf2 = 11
+val maxProf2 = 9
 val maxBins2 = 2
 
 val DTweather_ML2 = new DecisionTreeClassifier().setImpurity(impureza).setMaxDepth(maxProf2).setMaxBins(maxBins2)
@@ -435,7 +435,7 @@ println(f"Tasa de error ML2= $error_ML2%1.3f")
 
 // se comprueba que maxBins no modifica nada
 
-val maxProf_ML3 = 3
+val maxProf_ML3 = 11
 val maxBins_ML3 = 2
 
 val DTweather_ML3 = new DecisionTreeClassifier().setImpurity(impureza).setMaxDepth(maxProf_ML3).setMaxBins(maxBins_ML3)
