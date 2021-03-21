@@ -18,7 +18,7 @@ println("\n\n******************* CARGA DE DATOS *******************\n\n")
 
 val PATH = "/home/usuario/australia/"
 val FILE_WEATHER = "weatherAUS.csv"
-val MODEL_FOLDER = "model/"
+val MODEL_FOLDER = "modelo/"
 
 val weatherSchema = StructType(Array(
   StructField("Date", StringType, true),
