@@ -192,7 +192,7 @@ val siColumns= new StringIndexer().setInputCols(attributeColumns).setOutputCols(
 
 val simColumns= siColumns.setHandleInvalid("skip").fit(weatherDF5_train)
 
-val weatherDFnumeric= simColumns.transform(weatherDF6_train).drop(attributeColumns:_*)
+val weatherDFnumeric= simColumns.transform(weatherDF5_train).drop(attributeColumns:_*)
 
 // VectorAssembler
 
@@ -222,10 +222,162 @@ val WeatherFeaturesClaseDFLabel = indiceClase.fit(WeatherFeaturesClaseDF).transf
 
 WeatherFeaturesClaseDFLabel.show(5)
 
+// Fin train
 
 // Test
 
+val columns = Seq("MinTemp", "MaxTemp", "Rainfall", "Evaporation", "Sunshine",
+                   "WindGustSpeed", "WindSpeed9am", "WindSpeed3pm", "Pressure9am", 
+                   "Pressure3pm", "Humidity9am", "Humidity3pm", "Temp9am", "Temp3pm")
 
+val weatherDF_test_count = weatherDF_test.count
+
+val weatherDF_test_duplicates = weatherDF_test.withColumn("UniqueID", concat(col("Date"), lit("-"), col("Location"))).dropDuplicates("UniqueID").drop("UniqueID")
+
+val weatherDF_test_duplicate_count = weatherDF_test_count - weatherDF_test_duplicates.count
+
+println(f"Número de valores duplicados $weatherDF_test_duplicate_count")
+
+val weatherDF_test_empty = weatherDF_test_duplicates.na.drop("all")
+
+val weatherDF_test_empty_count = weatherDF_test_count - weatherDF_test_empty.count
+
+println(f"Número de registros completamente vacíos $weatherDF_test_empty_count")
+
+val weatherDF_test_claseNull = weatherDF_test_empty.na.drop("all", Seq("RainTomorrow"))
+
+val weatherDF_test_claseNull_count = weatherDF_test_count - weatherDF_test_claseNull.count
+
+println(f"Número de registros con la clase ausente $weatherDF_test_claseNull")
+
+val weatherDF_test_countAfterDrop = weatherDF_test_claseNull.count
+
+println(f"Número de registros tras los drops $weatherDF_test_countAfterDrop")
+
+val porcentaje_eliminados = ((weatherDF_test_count.toDouble - weatherDF_test_countAfterDrop) * 100)/ weatherDF_test_count
+
+println(f"Porcentaje de registros eliminados $porcentaje_eliminados %%")
+
+val weatherDF2_test = weatherDF_test_claseNull.withColumn("Month",split(col("Date"),"-").getItem(1).cast("int")).drop("Date")
+
+val weatherDF3_test = columns.foldLeft(weatherDF2_test) { 
+  (tempDF, colName) => {
+   
+    val quantiles = weatherDF_test.stat.approxQuantile(colName,Array(0.25, 0.5, 0.75),0.0)
+    val Q1 = quantiles(0)
+    val Q3 = quantiles(2)
+    val median = quantiles(1)
+      
+    val IQR = Q3 - Q1
+
+    val lowerRange = Q1 - 1.5*IQR
+    val upperRange = Q3+ 1.5*IQR
+   
+    println(colName + " lower: " + lowerRange + " upper: " + upperRange + " median: " + median)
+      
+    tempDF.withColumn(
+      colName,
+      when(col(colName) > upperRange, upperRange)
+      .when(col(colName) < lowerRange, lowerRange)
+      .when(col(colName).isNull || col(colName) === "NA", median)
+      .otherwise(col(colName))
+    )
+  }  
+}
+
+weatherDF3_test.limit(5).show()
+
+
+//variables categóricas
+
+val columns2 = Seq("WindGustDir", "WindDir9am", "WindDir3pm", "RainToday")
+
+val weatherDF4_test = columns2.foldLeft(weatherDF3_test) { 
+  (tempDF, colName) => {
+   
+    val moda_array = weatherDF2_test.groupBy(colName).count().orderBy($"count".desc).withColumnRenamed(colName, "value").filter("value != 'null'").filter("value != 'NA'").take(1)
+    val moda = moda_array(0)(0)
+    
+    println(colName + " - moda : " + moda)
+    
+    tempDF.withColumn(
+      colName,
+      when(col(colName).isNull || col(colName) === "NA", moda)
+      .otherwise(col(colName))
+    )
+  }  
+}
+
+weatherDF4_test.limit(5).show()
+
+
+// variables categóricas 2 (cloud)
+
+val columns3 = Seq("Cloud9am", "Cloud3pm")
+
+val weatherDF5_test = columns3.foldLeft(weatherDF4_test) { 
+  (tempDF, colName) => {
+   
+    val moda_array = weatherDF3_test.groupBy(colName).count().orderBy($"count".desc).withColumnRenamed(colName, "value").filter("value is not null").take(1)
+    
+    val moda = moda_array(0)(0)
+    
+    println(colName + " - moda : " + moda)
+    
+    tempDF.withColumn(
+      colName,
+      when(col(colName).isNull || col(colName) === "NA" || col(colName) > 8 || col(colName) < 0, moda)
+      .otherwise(col(colName))
+    )
+  }  
+}
+
+weatherDF5_test.limit(5).show()
+
+// Obtenemos el nombrede las columnasde weatherDF, salvo la clase
+
+val attributeColumns_test= Seq("Location", "WindGustDir", "WindDir9am", "WindDir3pm", "RainToday").toArray
+
+// Generamos los nombres de las nuevas columnas
+val outputColumns_test = attributeColumns_test.map(_ + "-num").toArray
+
+val siColumns_test= new StringIndexer().setInputCols(attributeColumns_test).setOutputCols(outputColumns_test).setStringOrderType("alphabetDesc")
+
+// Creamos el StringIndexerModel
+
+val simColumns_test= siColumns_test.setHandleInvalid("skip").fit(weatherDF5_test)
+
+val weatherDFnumeric_test= simColumns_test.transform(weatherDF5_test).drop(attributeColumns_test:_*)
+
+// VectorAssembler
+
+val attributeColumns_hot_test= Seq("Location", "WindGustDir", "WindDir9am", "WindDir3pm", "RainToday").toArray
+
+val inputCol_test = outputColumns_test
+
+// Generamos los nombres de las nuevas columnas
+
+val outputColumns_hot_test = attributeColumns_hot_test.map(_ + "-hot").toArray
+
+val hotColumns_test = new OneHotEncoder().setInputCols(inputCol_test).setOutputCols(outputColumns_hot_test)
+
+val hotmColumns_test= hotColumns_test.fit(weatherDFnumeric_test)
+
+val WeatherDFhot_test = hotmColumns_test.transform(weatherDFnumeric_test).drop(inputCol_test:_*)
+
+val va_test = new VectorAssembler().setOutputCol("features").setInputCols(outputColumns_hot_test)
+
+val WeatherFeaturesClaseDF_test = va_test.transform(WeatherDFhot_test).select("features", "RainTomorrow")
+
+WeatherFeaturesClaseDF_test.show(2)
+
+
+val indiceClase_test= new StringIndexer().setInputCol("RainTomorrow").setOutputCol("label").setStringOrderType("alphabetDesc")
+val WeatherFeaturesClaseDFLabel_test = indiceClase_test.fit(WeatherFeaturesClaseDF_test).transform(WeatherFeaturesClaseDF_test).drop("RainTomorrow")
+
+WeatherFeaturesClaseDFLabel_test.show(5)
+
+// Fin Test
 
 //valores por defecto
 
