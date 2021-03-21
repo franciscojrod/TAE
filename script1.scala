@@ -472,5 +472,5 @@ println(f"Tasa de error ML4 = $error_ML4%1.3f")
 
 println("El modelo elegido es DTweatherAus_ML3")
 
-DTweatherAus_ML3.write.overwrite().save(PATH  + "modelo/DTweatherAus_modelo")
+DTweatherAus_ML3.write.overwrite().save(PATH  + "modelo/")
 
