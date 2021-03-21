@@ -470,4 +470,4 @@ println(f"Tasa de error ML4 = $error_ML4%1.3f")
 
 // Guardando modelo
 
-DTweatherAus_ML4.write.overwrite().save(PATH  + "modelo/DTweatherAus_ML4")
+DTweatherAus_ML4.write.overwrite().save(PATH  + "model/DTweatherAus_ML4")
