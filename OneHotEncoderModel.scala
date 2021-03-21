@@ -1,6 +1,7 @@
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.ml.feature.StringIndexer
 import org.apache.spark.ml.feature.StringIndexerModel
+import org.apache.spark.ml.classification.DecisionTreeClassificationModel
 
 // Obtenemos el nombrede las columnasde weatherDF, salvo la clase
 
@@ -154,4 +155,8 @@ println(f"Tasa de error ML4= $error_ML4%1.3f")
 
 //Save model
 
-// DTweather_ML4.write.overwrite().save(PATH + "DTweather_ML4")
+// DTweatherAus_ML4.write.overwrite().save(PATH + "DTweatherAus_ML4")
+
+// Charge the model
+
+// DecisionTreeClassificationModel.load(PATH + "DTweatherAus_ML4")
