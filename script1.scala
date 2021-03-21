@@ -48,10 +48,6 @@ val weatherRawDF = spark.read.format("csv").
   option("delimiter", ",").
   option("header", true).
   schema(weatherSchema).load(PATH + FILE_WEATHER)
-  .na.replace("MinTemp" :: "MaxTemp" :: "Rainfall" 
-   :: "Evaporation" :: "Sunshine" :: "WindGustDir" :: "WindGustSpeed" :: "WindDir9am" :: "WindDir3pm" 
-   :: "WindSpeed9am":: "WindSpeed3pm" :: "Humidity9am" :: "Humidity3pm" :: "Pressure9am" :: "Pressure3pm" ::  "Cloud9am"
-   :: "Cloud3pm" :: "Temp9am" :: "Temp3pm" :: "RainToday" :: "RainTomorrow" :: Nil, Map("NA" -> null))
 
 val num_recordsRaw = weatherRawDF.count()
 println("Numero de registros RAW: " + num_recordsRaw)
