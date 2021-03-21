@@ -88,9 +88,9 @@ val weatherDF_countAfterDrop = weatherDF_claseNull.count
 
 println(f"Número de registros tras los drops $weatherDF_countAfterDrop")
 
-val porcentaje_eliminados = ((weatherDF_count.toDouble - weatherDF_countAfterDrop) * 100)/ weatherDF_count
+val tasa_noClasificados = (weatherDF_count.toDouble - weatherDF_countAfterDrop)/ weatherDF_count
 
-println(f"Porcentaje de registros eliminados $porcentaje_eliminados %%")
+println(f"Tasa de no clasificados $tasa_noClasificados")
 
 val weatherDF2 = weatherDF_claseNull.withColumn("Month",split(col("Date"),"-").getItem(1).cast("int")).drop("Date")
 
