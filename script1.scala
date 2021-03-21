@@ -99,9 +99,9 @@ val weatherDF_train_countAfterDrop = weatherDF_train_claseNull.count
 
 println(f"Número de registros tras los drops $weatherDF_train_countAfterDrop")
 
-val porcentaje_eliminados = ((weatherDF_train_count.toDouble - weatherDF_train_countAfterDrop) * 100)/ weatherDF_train_count
+val tasa_noClasificados = (weatherDF_count.toDouble - weatherDF_countAfterDrop)/ weatherDF_count
 
-println(f"Porcentaje de registros eliminados $porcentaje_eliminados %%")
+println(f"Tasa de no clasificados $tasa_noClasificados")
 
 val weatherDF2_train = weatherDF_train_claseNull.withColumn("Month",split(col("Date"),"-").getItem(1).cast("int")).drop("Date")
 
@@ -254,9 +254,9 @@ val weatherDF_test_countAfterDrop = weatherDF_test_claseNull.count
 
 println(f"Número de registros tras los drops $weatherDF_test_countAfterDrop")
 
-val porcentaje_eliminados_test = ((weatherDF_test_count.toDouble - weatherDF_test_countAfterDrop) * 100)/ weatherDF_test_count
+val tasa_noClasificados = (weatherDF_count.toDouble - weatherDF_countAfterDrop)/ weatherDF_count
 
-println(f"Porcentaje de registros eliminados $porcentaje_eliminados_test %%")
+println(f"Tasa de no clasificados $tasa_noClasificados")
 
 val weatherDF2_test = weatherDF_test_claseNull.withColumn("Month",split(col("Date"),"-").getItem(1).cast("int")).drop("Date")
 
