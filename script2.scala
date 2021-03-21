@@ -18,7 +18,7 @@ println("\n\n******************* CARGA DE DATOS *******************\n\n")
 
 val PATH = "/home/usuario/australia/"
 val FILE_WEATHER = "weatherAUS.csv"
-val MODEL_FOLDER = "modelo/"
+val MODEL_FOLDER = "modelo/DTweatherAus_ML4"
 
 val weatherSchema = StructType(Array(
   StructField("Date", StringType, true),
@@ -57,29 +57,6 @@ val weatherDF = weatherRawDF.na.replace("MinTemp" :: "MaxTemp" :: "Rainfall"
    :: "Evaporation" :: "Sunshine" :: "WindGustDir" :: "WindGustSpeed" :: "WindDir9am" :: "WindDir3pm"
    :: "WindSpeed9am":: "WindSpeed3pm" :: "Humidity9am" :: "Humidity3pm" :: "Pressure9am" :: "Pressure3pm" ::  "Cloud9am"
    :: "Cloud3pm" :: "Temp9am" :: "Temp3pm" :: "RainToday" :: "RainTomorrow" :: Nil, Map("NA" -> null))
-.na.drop("all")
-
-
-val num_records = weatherDF.count()
-println("Numero de registros: " + num_records)
-
-
-println("Se han eliminado " + (num_recordsRaw - num_records) + " líneas vacías.")
-
-
-val primero = weatherDF.first()
-println("Primer registro: " + primero)
-
-val weatherDFnoNull = weatherDF.na.drop("all", Seq("RainTomorrow"))
-
-println("\n\n******************* Partición aleatoria *******************")
-
-val dataSplits = weatherDFnoNull.randomSplit(Array(0.7, 0.3), seed=0)
-val weatherDF_train = dataSplits(0)
-val weatherDF_test = dataSplits(1)
-
-println("Numero de registros train: " + weatherDF_train.count())
-println("Numero de registros test: " + weatherDF_test.count())
 
 // Variables numéricas
 
@@ -87,15 +64,40 @@ val columns = Seq("MinTemp", "MaxTemp", "Rainfall", "Evaporation", "Sunshine",
                    "WindGustSpeed", "WindSpeed9am", "WindSpeed3pm", "Pressure9am", 
                    "Pressure3pm", "Humidity9am", "Humidity3pm", "Temp9am", "Temp3pm")
 
-val weatherDF2_train = weatherDF_train.withColumn("UniqueID", concat(col("Date"), lit("-"), col("Location"))).dropDuplicates("UniqueID").drop("UniqueID")
+val weatherDF_count = weatherDF.count
 
-val weatherDF3_train = weatherDF2_train.withColumn("Month",split(col("Date"),"-").getItem(1).cast("int")).drop("Date")
+val weatherDF_duplicates = weatherDF.withColumn("UniqueID", concat(col("Date"), lit("-"), col("Location"))).dropDuplicates("UniqueID").drop("UniqueID")
 
+val weatherDF_duplicate_count = weatherDF_count - weatherDF_duplicates.count
 
-val weatherDF4_train = columns.foldLeft(weatherDF3_train) { 
+println(f"Número de valores duplicados $weatherDF_duplicate_count")
+
+val weatherDF_empty = weatherDF_duplicates.na.drop("all")
+
+val weatherDF_empty_count = weatherDF_count - weatherDF_empty.count
+
+println(f"Número de registros completamente vacíos $weatherDF_empty_count")
+
+val weatherDF_claseNull = weatherDF_empty.na.drop("all", Seq("RainTomorrow"))
+
+val weatherDF_claseNull_count = weatherDF_count - weatherDF_claseNull.count
+
+println(f"Número de registros con la clase ausente $weatherDF_claseNull")
+
+val weatherDF_countAfterDrop = weatherDF_claseNull.count
+
+println(f"Número de registros tras los drops $weatherDF_countAfterDrop")
+
+val porcentaje_eliminados = ((weatherDF_count.toDouble - weatherDF_countAfterDrop) * 100)/ weatherDF_count
+
+println(f"Porcentaje de registros eliminados $porcentaje_eliminados %%")
+
+val weatherDF2 = weatherDF_claseNull.withColumn("Month",split(col("Date"),"-").getItem(1).cast("int")).drop("Date")
+
+val weatherDF3 = columns.foldLeft(weatherDF2) { 
   (tempDF, colName) => {
    
-    val quantiles = weatherDF_train.stat.approxQuantile(colName,Array(0.25, 0.5, 0.75),0.0)
+    val quantiles = weatherDF2.stat.approxQuantile(colName,Array(0.25, 0.5, 0.75),0.0)
     val Q1 = quantiles(0)
     val Q3 = quantiles(2)
     val median = quantiles(1)
@@ -117,7 +119,7 @@ val weatherDF4_train = columns.foldLeft(weatherDF3_train) {
   }  
 }
 
-weatherDF2_train.limit(5).show()
+weatherDF3.limit(5).show()
 
 
 
@@ -125,10 +127,10 @@ weatherDF2_train.limit(5).show()
 
 val columns2 = Seq("WindGustDir", "WindDir9am", "WindDir3pm", "RainToday")
 
-val weatherDF5_train = columns2.foldLeft(weatherDF4_train) { 
+val weatherDF4 = columns2.foldLeft(weatherDF3) { 
   (tempDF, colName) => {
    
-    val moda_array = weatherDF2_train.groupBy(colName).count().orderBy($"count".desc).withColumnRenamed(colName, "value").filter("value != 'null'").filter("value != 'NA'").take(1)
+    val moda_array = weatherDF3.groupBy(colName).count().orderBy($"count".desc).withColumnRenamed(colName, "value").filter("value != 'null'").filter("value != 'NA'").take(1)
     val moda = moda_array(0)(0)
     
     println(colName + " - moda : " + moda)
@@ -141,7 +143,7 @@ val weatherDF5_train = columns2.foldLeft(weatherDF4_train) {
   }  
 }
 
-weatherDF3_train.limit(5).show()
+weatherDF4.limit(5).show()
 
 
 
@@ -149,10 +151,10 @@ weatherDF3_train.limit(5).show()
 
 val columns3 = Seq("Cloud9am", "Cloud3pm")
 
-val weatherDF6_train = columns3.foldLeft(weatherDF5_train) { 
+val weatherDF5 = columns3.foldLeft(weatherDF4) { 
   (tempDF, colName) => {
    
-    val moda_array = weatherDF3_train.groupBy(colName).count().orderBy($"count".desc).withColumnRenamed(colName, "value").filter("value is not null").take(1)
+    val moda_array = weatherDF4.groupBy(colName).count().orderBy($"count".desc).withColumnRenamed(colName, "value").filter("value is not null").take(1)
     
     val moda = moda_array(0)(0)
     
@@ -166,7 +168,7 @@ val weatherDF6_train = columns3.foldLeft(weatherDF5_train) {
   }  
 }
 
-weatherDF6_train.limit(5).show()
+weatherDF5.limit(5).show()
 
 // Obtenemos el nombrede las columnasde weatherDF, salvo la clase
 
@@ -179,9 +181,9 @@ val siColumns= new StringIndexer().setInputCols(attributeColumns).setOutputCols(
 
 // Creamos el StringIndexerModel
 
-val simColumns= siColumns.setHandleInvalid("skip").fit(weatherDF6_train)
+val simColumns= siColumns.setHandleInvalid("skip").fit(weatherDF5)
 
-val weatherDFnumeric= simColumns.transform(weatherDF6_train).drop(attributeColumns:_*)
+val weatherDFnumeric= simColumns.transform(weatherDF5).drop(attributeColumns:_*)
 
 // VectorAssembler
 
@@ -204,7 +206,6 @@ val va = new VectorAssembler().setOutputCol("features").setInputCols(outputColum
 val WeatherFeaturesClaseDF = va.transform(WeatherDFhot).select("features", "RainTomorrow")
 
 WeatherFeaturesClaseDF.show(2)
-
 
 val indiceClase= new StringIndexer().setInputCol("RainTomorrow").setOutputCol("label").setStringOrderType("alphabetDesc")
 val WeatherFeaturesClaseDFLabel = indiceClase.fit(WeatherFeaturesClaseDF).transform(WeatherFeaturesClaseDF).drop("RainTomorrow")
