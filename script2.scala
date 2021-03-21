@@ -18,7 +18,7 @@ println("\n\n******************* CARGA DE DATOS *******************\n\n")
 
 val PATH = "/home/usuario/australia/"
 val FILE_WEATHER = "weatherAUS.csv"
-val MODEL_FOLDER = "DTweatherAus_ML4"
+val MODEL_FOLDER = "model/"
 
 val weatherSchema = StructType(Array(
   StructField("Date", StringType, true),
@@ -48,7 +48,7 @@ val weatherSchema = StructType(Array(
 val weatherRawDF = spark.read.format("csv").
   option("delimiter", ",").
   option("header", true).
-  schema(weatherSchema).load(PATH + FILE_WEATHER)
+  schema(weatherSchema).load(PATH + MODEL_FOLDER +FILE_WEATHER)
 
 val num_recordsRaw = weatherRawDF.count()
 println("Numero de registros RAW: " + num_recordsRaw)
