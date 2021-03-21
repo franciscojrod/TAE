@@ -48,7 +48,7 @@ val weatherSchema = StructType(Array(
 val weatherRawDF = spark.read.format("csv").
   option("delimiter", ",").
   option("header", true).
-  schema(weatherSchema).load(PATH + MODEL_FOLDER +FILE_WEATHER)
+  schema(weatherSchema).load(PATH + MODEL_FOLDER + FILE_WEATHER)
 
 val num_recordsRaw = weatherRawDF.count()
 println("Numero de registros RAW: " + num_recordsRaw)
