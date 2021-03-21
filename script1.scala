@@ -108,7 +108,7 @@ val weatherDF2_train = weatherDF_train_claseNull.withColumn("Month",split(col("D
 val weatherDF3_train = columns.foldLeft(weatherDF2_train) { 
   (tempDF, colName) => {
    
-    val quantiles = weatherDF_train.stat.approxQuantile(colName,Array(0.25, 0.5, 0.75),0.0)
+    val quantiles = weatherDF2_train.stat.approxQuantile(colName,Array(0.25, 0.5, 0.75),0.0)
     val Q1 = quantiles(0)
     val Q3 = quantiles(2)
     val median = quantiles(1)
@@ -140,7 +140,7 @@ val columns2 = Seq("WindGustDir", "WindDir9am", "WindDir3pm", "RainToday")
 val weatherDF4_train = columns2.foldLeft(weatherDF3_train) { 
   (tempDF, colName) => {
    
-    val moda_array = weatherDF2_train.groupBy(colName).count().orderBy($"count".desc).withColumnRenamed(colName, "value").filter("value != 'null'").filter("value != 'NA'").take(1)
+    val moda_array = weatherDF3_train.groupBy(colName).count().orderBy($"count".desc).withColumnRenamed(colName, "value").filter("value != 'null'").filter("value != 'NA'").take(1)
     val moda = moda_array(0)(0)
     
     println(colName + " - moda : " + moda)
@@ -163,7 +163,7 @@ val columns3 = Seq("Cloud9am", "Cloud3pm")
 val weatherDF5_train = columns3.foldLeft(weatherDF4_train) { 
   (tempDF, colName) => {
    
-    val moda_array = weatherDF3_train.groupBy(colName).count().orderBy($"count".desc).withColumnRenamed(colName, "value").filter("value is not null").take(1)
+    val moda_array = weatherDF4_train.groupBy(colName).count().orderBy($"count".desc).withColumnRenamed(colName, "value").filter("value is not null").take(1)
     
     val moda = moda_array(0)(0)
     
@@ -226,7 +226,7 @@ WeatherFeaturesClaseDFLabel.show(5)
 
 // Test
 
-val columns = Seq("MinTemp", "MaxTemp", "Rainfall", "Evaporation", "Sunshine",
+val columns_test = Seq("MinTemp", "MaxTemp", "Rainfall", "Evaporation", "Sunshine",
                    "WindGustSpeed", "WindSpeed9am", "WindSpeed3pm", "Pressure9am", 
                    "Pressure3pm", "Humidity9am", "Humidity3pm", "Temp9am", "Temp3pm")
 
@@ -254,16 +254,16 @@ val weatherDF_test_countAfterDrop = weatherDF_test_claseNull.count
 
 println(f"Número de registros tras los drops $weatherDF_test_countAfterDrop")
 
-val porcentaje_eliminados = ((weatherDF_test_count.toDouble - weatherDF_test_countAfterDrop) * 100)/ weatherDF_test_count
+val porcentaje_eliminados_test = ((weatherDF_test_count.toDouble - weatherDF_test_countAfterDrop) * 100)/ weatherDF_test_count
 
-println(f"Porcentaje de registros eliminados $porcentaje_eliminados %%")
+println(f"Porcentaje de registros eliminados $porcentaje_eliminados_test %%")
 
 val weatherDF2_test = weatherDF_test_claseNull.withColumn("Month",split(col("Date"),"-").getItem(1).cast("int")).drop("Date")
 
-val weatherDF3_test = columns.foldLeft(weatherDF2_test) { 
+val weatherDF3_test = columns_test.foldLeft(weatherDF2_test) { 
   (tempDF, colName) => {
    
-    val quantiles = weatherDF_test.stat.approxQuantile(colName,Array(0.25, 0.5, 0.75),0.0)
+    val quantiles = weatherDF2_test.stat.approxQuantile(colName,Array(0.25, 0.5, 0.75),0.0)
     val Q1 = quantiles(0)
     val Q3 = quantiles(2)
     val median = quantiles(1)
@@ -290,12 +290,12 @@ weatherDF3_test.limit(5).show()
 
 //variables categóricas
 
-val columns2 = Seq("WindGustDir", "WindDir9am", "WindDir3pm", "RainToday")
+val columns2_test = Seq("WindGustDir", "WindDir9am", "WindDir3pm", "RainToday")
 
-val weatherDF4_test = columns2.foldLeft(weatherDF3_test) { 
+val weatherDF4_test = columns2_test.foldLeft(weatherDF3_test) { 
   (tempDF, colName) => {
    
-    val moda_array = weatherDF2_test.groupBy(colName).count().orderBy($"count".desc).withColumnRenamed(colName, "value").filter("value != 'null'").filter("value != 'NA'").take(1)
+    val moda_array = weatherDF3_test.groupBy(colName).count().orderBy($"count".desc).withColumnRenamed(colName, "value").filter("value != 'null'").filter("value != 'NA'").take(1)
     val moda = moda_array(0)(0)
     
     println(colName + " - moda : " + moda)
@@ -313,12 +313,12 @@ weatherDF4_test.limit(5).show()
 
 // variables categóricas 2 (cloud)
 
-val columns3 = Seq("Cloud9am", "Cloud3pm")
+val columns3_test = Seq("Cloud9am", "Cloud3pm")
 
-val weatherDF5_test = columns3.foldLeft(weatherDF4_test) { 
+val weatherDF5_test = columns3_test.foldLeft(weatherDF4_test) { 
   (tempDF, colName) => {
    
-    val moda_array = weatherDF3_test.groupBy(colName).count().orderBy($"count".desc).withColumnRenamed(colName, "value").filter("value is not null").take(1)
+    val moda_array = weatherDF4_test.groupBy(colName).count().orderBy($"count".desc).withColumnRenamed(colName, "value").filter("value is not null").take(1)
     
     val moda = moda_array(0)(0)
     
@@ -471,3 +471,4 @@ println(f"Tasa de error ML4 = $error_ML4%1.3f")
 // Guardando modelo
 
 DTweatherAus_ML4.write.overwrite().save(PATH  + "model/DTweatherAus_ML4")
+
