@@ -151,3 +151,7 @@ val error_ML4 = 1 - acierto_ML4
 //val acierto_ML4 = 1-error_ML4
 
 println(f"Tasa de error ML4= $error_ML4%1.3f")
+
+//Save model
+
+// DTweather_ML4.write.overwrite().save(PATH + "DTweather_ML4")
