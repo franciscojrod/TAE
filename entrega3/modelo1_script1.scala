@@ -285,9 +285,9 @@ val lr = new LogisticRegression()
 //Adding family multimodal
 // Fit the model
 
-val lrModel = lr.fit(weatherFeaturesLabelDF)
+val lrModel = lr.fit(weatherFeaturesLabelDF_train)
 
-val lrModelApplied=lrModel.transform(weatherFeaturesLabelDF)
+val lrModelApplied=lrModel.transform(weatherFeaturesLabelDF_test)
 
 // Print the coefficients and intercept for logistic regression
 println(s"Coefficients: ${lrModel.coefficients} Intercept: ${lrModel.intercept}")
