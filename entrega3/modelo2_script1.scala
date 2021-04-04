@@ -29,6 +29,9 @@ import org.apache.spark.ml.tuning.CrossValidator
  *
  */
 
+PATH = "/home/usuario/australia/"
+:load PATH + "load_transformation.scala"
+
 /*
 
 println("\n\n******************* CARGA DE DATOS *******************\n\n")
