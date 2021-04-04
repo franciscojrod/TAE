@@ -45,7 +45,6 @@ import org.apache.spark.ml.classification.LogisticRegressionModel
 println("\n\n******************* CARGA DE DATOS *******************\n\n")
 val PATH = "/home/usuario/australia/"
 val FILE_WEATHER = "weatherAUS.csv"
-val MODEL_FOLDER = "lrModelML/"
 val MODEL_FOLDER = "modelo/lrModelML/"
 
 val weatherSchema = StructType(Array(
@@ -185,7 +184,7 @@ val lrLoadModel = LogisticRegressionModel.load(PATH + MODEL_FOLDER)
 val lrModelApplied=lrLoadModel.transform(weatherFeaturesLabelDF)
 
 // Print the coefficients and intercept for logistic regression
-println(s"Coefficients: ${lrModel.coefficients} Intercept: ${lrModel.intercept}")
+println(s"Coefficients: ${lrLoadModel.coefficients} Intercept: ${lrLoadModel.intercept}")
 
 
 // Metricas
