@@ -221,7 +221,7 @@ val weatherFeaturesLabelDF= indiceClase.fit(weatherFeaturesClaseDF).transform(we
 
 // Selección del modelo
 
-*/
+
 
 import org.apache.spark.ml.classification.RandomForestClassifier
 import org.apache.spark.ml.evaluation.MulticlassClassificationEvaluator
