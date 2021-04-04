@@ -28,6 +28,7 @@ val indexer = new StringIndexer()
 val labelDf = indexer.fit(featureDf).transform(featureDf)
 labelDf.printSchema()
 
+val randomForestClassifier = new RandomForestClassifier()
 
 val stages = Array(assembler, indexer, randomForestClassifier)
 
@@ -54,7 +55,9 @@ println(pipelineAccuracy)
 
 trainingData.show(5)
 
-val paramGrid = new ParamGridBuilder().addGrid(randomForestClassifier.maxBins, Array(42, 80)).addGrid(randomForestClassifier.maxDepth, Array(3, 6, 10)).addGrid(randomForestClassifier.impurity, Array( "gini")).build()
+
+
+val paramGrid = new ParamGridBuilder().addGrid(randomForestClassifier.maxBins, Array(42, 49,  80)).addGrid(randomForestClassifier.maxDepth, Array(3, 6, 10)).addGrid(randomForestClassifier.impurity, Array( "gini", "entropy")).build()
 
 val cv = new CrossValidator().setEstimator(pipeline).setEvaluator(evaluator).setEstimatorParamMaps(paramGrid).setNumFolds(5)
 
