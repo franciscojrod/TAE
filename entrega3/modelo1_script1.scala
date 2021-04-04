@@ -95,9 +95,6 @@ val lr = new LogisticRegression()
   .setThreshold(0.5)
   .setFitIntercept(false)
 
-
-//.setFamily("multinomial")
-
 //Adding family multimodal
 // Fit the model
 
@@ -111,6 +108,27 @@ println(s"Coefficients: ${lrModel.coefficients} Intercept: ${lrModel.intercept}"
 
 // Metricas
 
+
+// Tasa de acierto, su desviación estándar y su intervalo de confianza para una confianza del 95%. 
+
+/* Tasa de acierto */
+
+val predictionsAndLabelsDF_lr = lrModelApplied.select("prediction", "label")
+val metrics_lrML = new MulticlassClassificationEvaluator()
+metrics_lrML.setMetricName("accuracy")
+val acierto_lrML = metrics_lrML.evaluate(predictionsAndLabelsDF_lr)
+val error_lrML = 1 - acierto_lrML
+
+
+/* Desviacian estandar */
+
+predictionsAndLabelsDF_lr.select(stddev(predictionsAndLabelsDF_lr("prediction"))).show()
+
+/* Intervalo de confianza */
+
+val IntConfianzaUp = error_lrML + math.sqrt((error_lrML*(1-error_lrML))/1.96)
+val IntConfianzaDown = error_lrML - math.sqrt((error_lrML*(1-error_lrML))/1.96)
+println(f"El intervalo de confianza está entre $IntConfianzaDown%1.3f y $IntConfianzaUp%1.3f" )
 
 // Binary evaluation - probability
 
