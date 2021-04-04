@@ -340,7 +340,7 @@ println("Puntos para construir curva ROC con MLlib, probabilitiesAndLabels, 15 b
 
 MLlib_curvaROC.take(17).foreach(x => println(x))
 
-MLlib_curvaROC.coalesce(1,true).saveAsTextFile("Try1")
+MLlib_curvaROC.coalesce(1,true).saveAsTextFile("lrROC")
 
 // area under PR curve
 
@@ -375,18 +375,3 @@ val TFP = FP/(FP + TN).toDouble
 // Precision
 
 val prec = TP/(TP + FP).toDouble
-
-// PR Curve: Plot of Recall (x) vs Precision (y).
-
-
-
-import org.apache.spark.mllib.evaluation.BinaryClassificationMetrics
-import org.apache.spark.mllib.regression.LabeledPoint
-
-val lrModelLbFe = lrModelApplied.select("features", "label").rdd.map(row =>
-  (row.getAs[Vector](0)(0), row.getAs[Double](1)))
-
-
-val metrics = new BinaryClassificationMetrics(lrModelLbFe)
-
-metrics.areaUnderPR()
