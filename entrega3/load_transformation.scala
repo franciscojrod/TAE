@@ -93,8 +93,8 @@ println(f"Tasa de no clasificados $tasa_noClasificados")
 /*
  * TRANSFORMACIÓN DE DATOS TRAINING
  */
-val weatherDF2_test = weatherDF_train_claseNull.withColumn("Month",split(col("Date"),"-").getItem(1).cast("int")).drop("Date")
-val weatherDF3_test = columns.foldLeft(weatherDF2_train) { 
+val weatherDF2_train = weatherDF_train_claseNull.withColumn("Month",split(col("Date"),"-").getItem(1).cast("int")).drop("Date")
+val weatherDF3_train = columns.foldLeft(weatherDF2_train) { 
   (tempDF, colName) => {
    
     val quantiles = weatherDF2_train.stat.approxQuantile(colName,Array(0.25, 0.5, 0.75),0.0)
