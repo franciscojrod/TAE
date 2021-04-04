@@ -78,7 +78,7 @@ val num_recordsRaw = weatherRawDF.count()
 println("Numero de registros RAW: " + num_recordsRaw)
 
 /*
- * LIMPIEZA DE DATOS (PREVIA A PARTICION)
+ * LIMPIEZA DE DATOS 
  */
 
 // Eliminación de atributos
