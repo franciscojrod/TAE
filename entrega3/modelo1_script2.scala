@@ -32,6 +32,7 @@ import org.apache.spark.ml.feature.StringIndexer
 import org.apache.spark.ml.feature.StringIndexerModel
 import org.apache.spark.ml.feature.VectorAssembler
 import org.apache.spark.sql.DataFrame
+import org.apache.spark.ml.classification.LogisticRegressionModel
 
 
 
@@ -179,7 +180,7 @@ val indiceClase= new StringIndexer().setInputCol("RainTomorrow-num").setOutputCo
 val weatherFeaturesLabelDF= indiceClase.fit(weatherFeaturesClaseDF).transform(weatherFeaturesClaseDF).drop("RainTomorrow-num")
 
 
-val lrLoadModel = LogisticRegression.load(PATH + MODEL_FOLDER)
+val lrLoadModel = LogisticRegressionModel.load(PATH + MODEL_FOLDER)
 
 val lrModelApplied=lrLoadModel.transform(weatherFeaturesLabelDF)
 
