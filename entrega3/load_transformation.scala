@@ -91,6 +91,91 @@ println(f"Tasa de no clasificados $tasa_noClasificados")
 
 
 /*
+ * TRANSFORMACIÓN DE DATOS TRAINING
+ */
+val weatherDF2_test = weatherDF_train_claseNull.withColumn("Month",split(col("Date"),"-").getItem(1).cast("int")).drop("Date")
+val weatherDF3_test = columns.foldLeft(weatherDF2_train) { 
+  (tempDF, colName) => {
+   
+    val quantiles = weatherDF2_train.stat.approxQuantile(colName,Array(0.25, 0.5, 0.75),0.0)
+    val Q1 = quantiles(0)
+    val Q3 = quantiles(2)
+    val median = quantiles(1)
+      
+    val IQR = Q3 - Q1
+    val lowerRange = Q1 - 1.5*IQR
+    val upperRange = Q3+ 1.5*IQR
+   
+    println(colName + " lower: " + lowerRange + " upper: " + upperRange + " median: " + median)
+      
+    tempDF.withColumn(
+      colName,
+      when(col(colName) > upperRange, upperRange)
+      .when(col(colName) < lowerRange, lowerRange)
+      .when(col(colName).isNull || col(colName) === "NA", median)
+      .otherwise(col(colName))
+    )
+  }  
+}
+weatherDF3_train.limit(5).show()
+val columns2 = Seq("WindGustDir", "WindDir9am", "WindDir3pm", "RainToday")
+val weatherDF4_test = columns2.foldLeft(weatherDF3_train) { 
+  (tempDF, colName) => {
+   
+    val moda_array = weatherDF3_train.groupBy(colName).count().orderBy($"count".desc).withColumnRenamed(colName, "value").filter("value != 'null'").filter("value != 'NA'").take(1)
+    val moda = moda_array(0)(0)
+    
+    println(colName + " - moda : " + moda)
+    
+    tempDF.withColumn(
+      colName,
+      when(col(colName).isNull || col(colName) === "NA", moda)
+      .otherwise(col(colName))
+    )
+  }  
+}
+weatherDF4_train.limit(5).show()
+
+/*
+ *  CREACION TRAINING DF PARA ML
+ */
+
+// Obtenemos el nombrede las columnas, salvo la clase
+val attributeColumns_train= Seq("Month", "Location", "WindGustDir", "WindDir9am", "WindDir3pm", "RainToday", "RainTomorrow").toArray
+// Generamos los nombres de las nuevas columnas
+val outputColumns_train = attributeColumns_train.map(_ + "-num").toArray
+val siColumns_train= new StringIndexer().setInputCols(attributeColumns_train).setOutputCols(outputColumns_train).setStringOrderType("alphabetDesc")
+// Creamos el StringIndexerModel
+val simColumns_train= siColumns_train.fit(weatherDF4_train)
+val weatherDFnumeric_train= simColumns.transform(weatherDF4_train).drop(attributeColumns_train:_*)
+// VectorAssembler
+val va_train= new VectorAssembler().setOutputCol("features").setInputCols(weatherDFnumeric_train.columns.diff(Array("RainTomorrow-num"))) 
+val weatherFeaturesClaseDF_train= va_train.transform(weatherDFnumeric_train).select("features", "RainTomorrow-num")
+// creamos el StringIndexerpara la clase
+val indiceClase_train= new StringIndexer().setInputCol("RainTomorrow-num").setOutputCol("label").setStringOrderType("alphabetDesc")
+// Creamos el DataFramecarFeaturesLabelDFcon columnas features y label
+val weatherFeaturesLabelDF_train= indiceClase_train.fit(weatherFeaturesClaseDF_train).transform(weatherFeaturesClaseDF_train).drop("RainTomorrow-num")
+
+/*
+ * LIMPIEZA DE DATOS TEST
+ */
+val columns = Seq("MinTemp", "MaxTemp", "Rainfall", "WindGustSpeed", "WindSpeed9am", "WindSpeed3pm", "Pressure9am", 
+                   "Humidity9am", "Humidity3pm")
+val weatherDF_test_count = weatherDF_test.count
+val weatherDF_test_duplicates = weatherDF_test.withColumn("UniqueID", concat(col("Date"), lit("-"), col("Location"))).dropDuplicates("UniqueID").drop("UniqueID")
+val weatherDF_test_duplicate_count = weatherDF_test_count - weatherDF_test_duplicates.count
+println(f"Número de valores duplicados eliminados $weatherDF_test_duplicate_count")
+val weatherDF_test_empty = weatherDF_test_duplicates.na.drop("all")
+val weatherDF_test_empty_count = weatherDF_test_count - weatherDF_test_empty.count
+println(f"Número de registros completamente vacíos $weatherDF_test_empty_count")
+val weatherDF_test_claseNull = weatherDF_test_empty.na.drop("all", Seq("RainTomorrow"))
+val weatherDF_test_claseNull_count = weatherDF_test_count - weatherDF_test_claseNull.count
+println(f"Número de registros con la clase ausente $weatherDF_test_claseNull_count")
+val weatherDF_test_countAfterDrop = weatherDF_test_claseNull.count
+println(f"Número de registros tras los drops $weatherDF_test_countAfterDrop")
+val tasa_noClasificados = (weatherDF_test_count.toDouble - weatherDF_test_countAfterDrop)/ weatherDF_test_count
+println(f"Tasa de no clasificados $tasa_noClasificados")
+/*
  * TRANSFORMACIÓN DE DATOS TEST
  */
 val weatherDF2_test = weatherDF_test_claseNull.withColumn("Month",split(col("Date"),"-").getItem(1).cast("int")).drop("Date")
@@ -135,99 +220,25 @@ val weatherDF4_test = columns2.foldLeft(weatherDF3_test) {
   }  
 }
 weatherDF4_test.limit(5).show()
-// Obtenemos el nombrede las columnasde carDF, salvo la clase
-val attributeColumns= Seq("Month", "Location", "WindGustDir", "WindDir9am", "WindDir3pm", "RainToday", "RainTomorrow").toArray
-// Generamos los nombres de las nuevas columnas
-val outputColumns = attributeColumns.map(_ + "-num").toArray
-val siColumns= new StringIndexer().setInputCols(attributeColumns).setOutputCols(outputColumns).setStringOrderType("alphabetDesc")
-// Creamos el StringIndexerModel
-val simColumns= siColumns.fit(weatherDF4_test)
-val weatherDFnumeric= simColumns.transform(weatherDF4_test).drop(attributeColumns:_*)
-// VectorAssembler
-val va= new VectorAssembler().setOutputCol("features").setInputCols(weatherDFnumeric.columns.diff(Array("RainTomorrow-num"))) 
-val weatherFeaturesClaseDF= va.transform(weatherDFnumeric).select("features", "RainTomorrow-num")
-// creamos el StringIndexerpara la clase
-val indiceClase= new StringIndexer().setInputCol("RainTomorrow-num").setOutputCol("label").setStringOrderType("alphabetDesc")
-// Creamos el DataFramecarFeaturesLabelDFcon columnas features y label
-val weatherFeaturesLabelDF= indiceClase.fit(weatherFeaturesClaseDF).transform(weatherFeaturesClaseDF).drop("RainTomorrow-num")
+
 
 /*
- * LIMPIEZA DE DATOS TEST
+ *  CREACION TRAINING DF PARA ML
  */
-val columns = Seq("MinTemp", "MaxTemp", "Rainfall", "WindGustSpeed", "WindSpeed9am", "WindSpeed3pm", "Pressure9am", 
-                   "Humidity9am", "Humidity3pm")
-val weatherDF_test_count = weatherDF_test.count
-val weatherDF_test_duplicates = weatherDF_test.withColumn("UniqueID", concat(col("Date"), lit("-"), col("Location"))).dropDuplicates("UniqueID").drop("UniqueID")
-val weatherDF_test_duplicate_count = weatherDF_test_count - weatherDF_test_duplicates.count
-println(f"Número de valores duplicados eliminados $weatherDF_test_duplicate_count")
-val weatherDF_test_empty = weatherDF_test_duplicates.na.drop("all")
-val weatherDF_test_empty_count = weatherDF_test_count - weatherDF_test_empty.count
-println(f"Número de registros completamente vacíos $weatherDF_test_empty_count")
-val weatherDF_test_claseNull = weatherDF_test_empty.na.drop("all", Seq("RainTomorrow"))
-val weatherDF_test_claseNull_count = weatherDF_test_count - weatherDF_test_claseNull.count
-println(f"Número de registros con la clase ausente $weatherDF_test_claseNull_count")
-val weatherDF_test_countAfterDrop = weatherDF_test_claseNull.count
-println(f"Número de registros tras los drops $weatherDF_test_countAfterDrop")
-val tasa_noClasificados = (weatherDF_test_count.toDouble - weatherDF_test_countAfterDrop)/ weatherDF_test_count
-println(f"Tasa de no clasificados $tasa_noClasificados")
-/*
- * TRANSFORMACIÓN DE DATOS testING
- */
-val weatherDF2_test = weatherDF_test_claseNull.withColumn("Month",split(col("Date"),"-").getItem(1).cast("int")).drop("Date")
-val weatherDF3_test = columns.foldLeft(weatherDF2_test) { 
-  (tempDF, colName) => {
-   
-    val quantiles = weatherDF2_test.stat.approxQuantile(colName,Array(0.25, 0.5, 0.75),0.0)
-    val Q1 = quantiles(0)
-    val Q3 = quantiles(2)
-    val median = quantiles(1)
-      
-    val IQR = Q3 - Q1
-    val lowerRange = Q1 - 1.5*IQR
-    val upperRange = Q3+ 1.5*IQR
-   
-    println(colName + " lower: " + lowerRange + " upper: " + upperRange + " median: " + median)
-      
-    tempDF.withColumn(
-      colName,
-      when(col(colName) > upperRange, upperRange)
-      .when(col(colName) < lowerRange, lowerRange)
-      .when(col(colName).isNull || col(colName) === "NA", median)
-      .otherwise(col(colName))
-    )
-  }  
-}
-weatherDF3_test.limit(5).show()
-val columns2 = Seq("WindGustDir", "WindDir9am", "WindDir3pm", "RainToday")
-val weatherDF4_test = columns2.foldLeft(weatherDF3_test) { 
-  (tempDF, colName) => {
-   
-    val moda_array = weatherDF3_test.groupBy(colName).count().orderBy($"count".desc).withColumnRenamed(colName, "value").filter("value != 'null'").filter("value != 'NA'").take(1)
-    val moda = moda_array(0)(0)
-    
-    println(colName + " - moda : " + moda)
-    
-    tempDF.withColumn(
-      colName,
-      when(col(colName).isNull || col(colName) === "NA", moda)
-      .otherwise(col(colName))
-    )
-  }  
-}
-weatherDF4_test.limit(5).show()
-// Obtenemos el nombrede las columnasde carDF, salvo la clase
-val attributeColumns= Seq("Month", "Location", "WindGustDir", "WindDir9am", "WindDir3pm", "RainToday", "RainTomorrow").toArray
+
+// Obtenemos el nombrede las columnas, salvo la clase
+val attributeColumns_test= Seq("Month", "Location", "WindGustDir", "WindDir9am", "WindDir3pm", "RainToday", "RainTomorrow").toArray
 // Generamos los nombres de las nuevas columnas
-val outputColumns = attributeColumns.map(_ + "-num").toArray
-val siColumns= new StringIndexer().setInputCols(attributeColumns).setOutputCols(outputColumns).setStringOrderType("alphabetDesc")
+val outputColumns_test = attributeColumns_test.map(_ + "-num").toArray
+val siColumns_test= new StringIndexer().setInputCols(attributeColumns_test).setOutputCols(outputColumns_test).setStringOrderType("alphabetDesc")
 // Creamos el StringIndexerModel
-val simColumns= siColumns.fit(weatherDF4_test)
-val weatherDFnumeric= simColumns.transform(weatherDF4_test).drop(attributeColumns:_*)
+val simColumns_test= siColumns.fit(weatherDF4_test)
+val weatherDFnumeric_test= simColumns_test.transform(weatherDF4_test).drop(attributeColumns_test:_*)
 // VectorAssembler
-val va= new VectorAssembler().setOutputCol("features").setInputCols(weatherDFnumeric.columns.diff(Array("RainTomorrow-num"))) 
-val weatherFeaturesClaseDF= va.transform(weatherDFnumeric).select("features", "RainTomorrow-num")
+val va_test= new VectorAssembler().setOutputCol("features").setInputCols(weatherDFnumeric_test.columns.diff(Array("RainTomorrow-num"))) 
+val weatherFeaturesClaseDF_test= va_test.transform(weatherDFnumeric_test).select("features", "RainTomorrow-num")
 // creamos el StringIndexerpara la clase
-val indiceClase= new StringIndexer().setInputCol("RainTomorrow-num").setOutputCol("label").setStringOrderType("alphabetDesc")
+val indiceClase_test= new StringIndexer().setInputCol("RainTomorrow-num").setOutputCol("label").setStringOrderType("alphabetDesc")
 // Creamos el DataFramecarFeaturesLabelDFcon columnas features y label
-val weatherFeaturesLabelDF= indiceClase.fit(weatherFeaturesClaseDF).transform(weatherFeaturesClaseDF).drop("RainTomorrow-num")
+val weatherFeaturesLabelDF_test= indiceClase_test.fit(weatherFeaturesClaseDF_test).transform(weatherFeaturesClaseDF_test).drop("RainTomorrow-num")
 
