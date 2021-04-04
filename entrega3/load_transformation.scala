@@ -232,7 +232,7 @@ val attributeColumns_test= Seq("Month", "Location", "WindGustDir", "WindDir9am",
 val outputColumns_test = attributeColumns_test.map(_ + "-num").toArray
 val siColumns_test= new StringIndexer().setInputCols(attributeColumns_test).setOutputCols(outputColumns_test).setStringOrderType("alphabetDesc")
 // Creamos el StringIndexerModel
-val simColumns_test= siColumns.fit(weatherDF4_test)
+val simColumns_test= siColumns_test.fit(weatherDF4_test)
 val weatherDFnumeric_test= simColumns_test.transform(weatherDF4_test).drop(attributeColumns_test:_*)
 // VectorAssembler
 val va_test= new VectorAssembler().setOutputCol("features").setInputCols(weatherDFnumeric_test.columns.diff(Array("RainTomorrow-num"))) 
