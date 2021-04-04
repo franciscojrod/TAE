@@ -269,7 +269,7 @@ println(pipelineAccuracy)
 
 val paramGrid_randomForest = new ParamGridBuilder().addGrid(randomForestClassifier.maxBins, Array(42, 49,  80)).addGrid(randomForestClassifier.maxDepth, Array(3, 6, 10)).addGrid(randomForestClassifier.impurity, Array( "gini", "entropy")).build()
 
-val cv = new CrossValidator().setEstimator(pipeline).setEvaluator(evaluator).setEstimatorParamMaps(paramGrid).setNumFolds(5)
+val cv = new CrossValidator().setEstimator(pipeline).setEvaluator(evaluator).setEstimatorParamMaps(paramGrid_randomForest).setNumFolds(5)
 
 // this will take some time to run
 val cvModel = cv.fit(pipelineTrainingData)
