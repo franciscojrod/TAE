@@ -18,7 +18,7 @@ import org.apache.spark.sql.DataFrame
 
 
 println("\n\n******************* CARGA DE DATOS *******************\n\n")
-val PATH = "/home/usuario/australia6/"
+val PATH = "/home/usuario/australia/"
 val FILE_WEATHER = "weatherAUS.csv"
 val weatherSchema = StructType(Array(
   StructField("Date", StringType, true),
