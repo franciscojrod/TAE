@@ -31,7 +31,8 @@ import org.apache.spark.ml.tuning.CrossValidator
 
 
 PATH = "/home/usuario/australia/"
-:load PATH + "load_transformation.scala"
+val transformation_path = PATH + "load_transformation.scala"
+:load transformation_path 
 
 // MODELO 1: Logistic Regression 
 
