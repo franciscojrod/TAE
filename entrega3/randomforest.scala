@@ -8,78 +8,84 @@ import org.apache.spark.ml.tuning.ParamGridBuilder
 import org.apache.spark.ml.tuning.CrossValidator
 import org.apache.spark.ml.{PipelineModel, Pipeline}
 
-val seed = 5043
-val Array(trainingData, testData) = weatherFeaturesLabelDF.randomSplit(Array(0.7, 0.3), seed)
-
-// train Random Forest model with training data set
+val seed = 0
 val randomForestClassifier = new RandomForestClassifier()
   .setImpurity("gini")
-  .setMaxDepth(3)
+  .setMaxDepth(10)
   .setNumTrees(20)
-  .setMaxBins(64)
+  .setMaxBins(49)
   .setFeatureSubsetStrategy("auto")
   .setSeed(seed)
-val randomForestModel = randomForestClassifier.fit(trainingData)
-println(randomForestModel.toDebugString)
+val randomForestModel = randomForestClassifier.fit(weatherFeaturesLabelDF)
+//println(randomForestModel.toDebugString)
 
-val predictionDf = randomForestModel.transform(testData)
+val predictionDf = randomForestModel.transform(weatherFeaturesLabelDF)
 predictionDf.show(10)
 
-val Array(pipelineTrainingData, pipelineTestingData) = weatherDF4_train.randomSplit(Array(0.7, 0.3), seed)
-val cols1 = Array("MinTemp", "MaxTemp", "Rainfall", "WindGustSpeed", "WindSpeed9am", "WindSpeed3pm", "Pressure9am", "Humidity9am", "Humidity3pm")
+// False positive and false negative True positive true negative
+
+val TP = predictionDf.filter($"prediction"===1 && $"label"===$"prediction").count()
+val FP = predictionDf.filter($"prediction"===1 && $"label"=!=$"prediction").count()
+val TN = predictionDf.filter($"prediction"===0 && $"label"===$"prediction").count()
+val FN = predictionDf.filter($"prediction"===0 && $"label"=!=$"prediction").count()
 
 
-val assembler = new VectorAssembler()
-  .setInputCols(cols1)
-  .setOutputCol("features")
-val featureDf = assembler.transform(weatherDF4_train)
-featureDf.printSchema()
+// Tasa de acierto [TP + TN]/[𝑃 + 𝑁]
 
 
-val indexer = new StringIndexer()
-  .setInputCol("RainTomorrow")
-  .setOutputCol("label")
-val labelDf = indexer.fit(featureDf).transform(featureDf)
-labelDf.printSchema()
+val TA = (TP + TN)/(TP + FP + TN + FN).toDouble
+
+// Tasa de ciertos positivos (Recall)
+
+val TCP = TP/(TP + FN).toDouble
+
+// Tasa de falsos positivos
+
+val TFP = FP/(FP + TN).toDouble
+
+// Precision
+
+val prec = TP/(TP + FP).toDouble
+
+// PR Curve: Plot of Recall (x) vs Precision (y).
 
 
-val stages = Array(assembler, indexer, randomForestClassifier)
-
-val pipeline = new Pipeline().setStages(stages)
-val pipelineModel = pipeline.fit(pipelineTrainingData)
-
-// test model with test data
-val pipelinePredictionDf = pipelineModel.transform(pipelineTestingData)
-pipelinePredictionDf.show(10)
-
-// evaluate model with area under ROC
-val evaluator = new BinaryClassificationEvaluator()
-  .setLabelCol("label")
-  .setMetricName("areaUnderROC")
-
-// measure the accuracy
-val accuracy = evaluator.evaluate(predictionDf)
-println(accuracy)
-
-// measure the accuracy of pipeline model
-val pipelineAccuracy = evaluator.evaluate(pipelinePredictionDf)
-println(pipelineAccuracy)
+// https://github.com/apache/spark/blob/master/examples/src/main/scala/org/apache/spark/examples/mllib/BinaryClassificationMetricsExample.scala
 
 
-trainingData.show(5)
+import org.apache.spark.mllib.evaluation.BinaryClassificationMetrics
+import org.apache.spark.mllib.regression.LabeledPoint
 
-val paramGrid = new ParamGridBuilder().addGrid(randomForestClassifier.maxBins, Array(42, 80)).addGrid(randomForestClassifier.maxDepth, Array(3, 6, 10)).addGrid(randomForestClassifier.impurity, Array( "gini")).build()
+val lrModelLbFe = predictionDf.select("features", "label").rdd.map(row =>
+  (row.getAs[Vector](0)(0), row.getAs[Double](1)))
 
-val cv = new CrossValidator().setEstimator(pipeline).setEvaluator(evaluator).setEstimatorParamMaps(paramGrid).setNumFolds(5)
 
-// this will take some time to run
-val cvModel = cv.fit(pipelineTrainingData)
-// test cross validated model with test data
-val cvPredictionDf = cvModel.transform(pipelineTestingData)
-cvPredictionDf.show(10)
+val metrics = new BinaryClassificationMetrics(lrModelLbFe)
 
-val cvAccuracy = evaluator.evaluate(cvPredictionDf)
-println(cvAccuracy)
+metrics.areaUnderPR()
 
-val bestModel = cvModel.bestModel
-println(bestModel.asInstanceOf[PipelineModel].stages.last.extractParamMap)
+
+/*-------------*/
+
+val predictionsAndLabelsDFerror = predictionDf.select("prediction","label")
+
+/* Creamos una instancia de clasificacion multiclass */
+val LRmetrics_D = new MulticlassClassificationEvaluator()
+/* Fijamos como mÃ©trica la tasa de error: accuracy */ 
+LRmetrics_D.setMetricName("accuracy")
+/* Calculamos la tasa de acierto */
+val aciertoLR = LRmetrics_D.evaluate(predictionsAndLabelsDFerror)
+/* Calculamos el error */
+val errorLR = 1 - aciertoLR
+// Lo mostramos
+println(f"Tasa de error= $errorLR%1.3f")
+
+/* DesviaciÃ³n estÃ¡ndar */
+
+predictionDf.select(stddev(predictionDf("prediction"))).show()
+
+/* Intervalo de confianza */
+
+val IntConfianzaUp = errorLR + math.sqrt((errorLR*(1-errorLR))/1.96)
+val IntConfianzaDown = errorLR - math.sqrt((errorLR*(1-errorLR))/1.96)
+println(f"El intervalo de confianza está entre $IntConfianzaDown%1.3f y $IntConfianzaUp%1.3f" )
