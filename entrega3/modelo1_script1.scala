@@ -374,7 +374,7 @@ val TFP = FP/(FP + TN).toDouble
 
 // Precision
 
-val prec = TP/(TP + FP)
+val prec = TP/(TP + FP).toDouble
 
 // PR Curve: Plot of Recall (x) vs Precision (y).
 
