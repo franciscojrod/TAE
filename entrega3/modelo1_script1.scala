@@ -30,8 +30,8 @@ import org.apache.spark.ml.tuning.CrossValidator
  */
 
 
-
-load: load_transformation.scala
+PATH = ""
+load: PATH + "load_transformation.scala"
 
 // MODELO 1: Logistic Regression 
 
