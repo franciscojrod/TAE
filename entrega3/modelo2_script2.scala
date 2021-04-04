@@ -43,6 +43,9 @@ println("\n\n******************* CARGA DE DATOS *******************\n\n")
 val PATH = "/home/usuario/australia/"
 val FILE_WEATHER = "weatherAUS.csv"
 
+// Load model
+val MODEL_FOLDER = "modelo/modeloRF/"
+
 
 val weatherSchema = StructType(Array(
   StructField("Date", StringType, true),
@@ -178,10 +181,6 @@ val weatherFeaturesLabelDF= indiceClase.fit(weatherFeaturesClaseDF).transform(we
 
 println("\n\n******************* CARGA DE DATOS *******************\n\n")
 
-// Load model
-val PATH = "/home/usuario/australia/"
-val FILE_WEATHER = "weatherAUS.csv"
-val MODEL_FOLDER = "modeloRF/"
 
 
 val rfmodel = RandomForestClassificationModel.load(PATH + MODEL_FOLDER)
