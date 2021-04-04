@@ -44,7 +44,8 @@ import org.apache.spark.sql.DataFrame
 println("\n\n******************* CARGA DE DATOS *******************\n\n")
 val PATH = "/home/usuario/australia/"
 val FILE_WEATHER = "weatherAUS.csv"
-val MODEL_FOLDER = "modelo/lrModeloML/"
+val MODEL_FOLDER = "lrModelML/"
+//val MODEL_FOLDER = "modelo/lrModeloML/"
 
 val weatherSchema = StructType(Array(
   StructField("Date", StringType, true),
@@ -178,7 +179,7 @@ val indiceClase= new StringIndexer().setInputCol("RainTomorrow-num").setOutputCo
 val weatherFeaturesLabelDF= indiceClase.fit(weatherFeaturesClaseDF).transform(weatherFeaturesClaseDF).drop("RainTomorrow-num")
 
 
-val lrLoadModel = DecisionTreeClassificationModel.load(PATH + MODEL_FOLDER)
+val lrLoadModel = LogisticRegression.load(PATH + MODEL_FOLDER)
 
 val lrModelApplied=lrLoadModel.transform(weatherFeaturesLabelDF)
 
