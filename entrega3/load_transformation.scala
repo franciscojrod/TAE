@@ -147,7 +147,7 @@ val outputColumns_train = attributeColumns_train.map(_ + "-num").toArray
 val siColumns_train= new StringIndexer().setInputCols(attributeColumns_train).setOutputCols(outputColumns_train).setStringOrderType("alphabetDesc")
 // Creamos el StringIndexerModel
 val simColumns_train= siColumns_train.fit(weatherDF4_train)
-val weatherDFnumeric_train= simColumns.transform(weatherDF4_train).drop(attributeColumns_train:_*)
+val weatherDFnumeric_train= simColumns_train.transform(weatherDF4_train).drop(attributeColumns_train:_*)
 // VectorAssembler
 val va_train= new VectorAssembler().setOutputCol("features").setInputCols(weatherDFnumeric_train.columns.diff(Array("RainTomorrow-num"))) 
 val weatherFeaturesClaseDF_train= va_train.transform(weatherDFnumeric_train).select("features", "RainTomorrow-num")
