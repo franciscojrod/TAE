@@ -33,8 +33,6 @@ PATH = "/home/usuario/australia/"
 :load PATH + "load_transformation.scala"
 
 
-*/
-
 // MODELO 2: Random Forest 
 
 // Selección del modelo
