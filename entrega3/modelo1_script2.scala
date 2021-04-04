@@ -102,7 +102,7 @@ println(f"Número de valores duplicados eliminados $weatherDF_duplicate_count")
 val weatherDF_empty = weatherDF_duplicates.na.drop("all")
 val weatherDF_empty_count = weatherDF_count - weatherDF_empty.count
 println(f"Número de registros completamente vacíos $weatherDF_empty_count")
-val weatherDFn_claseNull = weatherDF_empty.na.drop("all", Seq("RainTomorrow"))
+val weatherDF_claseNull = weatherDF_empty.na.drop("all", Seq("RainTomorrow"))
 val weatherDF_claseNull_count = weatherDF_count - weatherDF_claseNull.count
 println(f"Número de registros con la clase ausente $weatherDF_claseNull_count")
 val weatherDF_countAfterDrop = weatherDF_claseNull.count
